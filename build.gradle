@@ -1,0 +1,37 @@
+apply plugin: 'groovy'
+
+sourceCompatibility = '1.8'
+
+def jarBaseName = 'CompiledComponentName' // Customize compiled file name
+def componentNode = parseComponent(project)
+def moquiDir = file(projectDir.absolutePath + '/../../..')
+def frameworkDir = file(moquiDir.absolutePath + '/framework')
+
+version = componentNode.'@version'
+
+repositories {
+    flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
+    jcenter()
+}
+
+tasks.withType(JavaCompile) { options.compilerArgs << "-proc:none" }
+tasks.withType(GroovyCompile) { options.compilerArgs << "-proc:none" }
+
+dependencies {
+    compile project(':framework')
+    testCompile project(':framework').configurations.testCompile.allDependencies
+}
+
+task cleanLib(type: Delete) { delete fileTree(dir: projectDir.absolutePath+'/lib', include: '*') }
+clean.dependsOn cleanLib
+
+jar {
+    destinationDir = file(projectDir.absolutePath + '/lib') // Declaring compiled Groovy goes into lib directory
+    baseName = jarBaseName
+}
+task copyDependencies { doLast {
+    copy { from (configurations.runtime - project(':framework').configurations.runtime - project(':framework').jar.archivePath)
+        into file(projectDir.absolutePath + '/lib') }
+} }
+copyDependencies.dependsOn cleanLib
+jar.dependsOn copyDependencies

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<entity-facade-xml type="seed-initial">
+    <moqui.basic.Enumeration enumId="UgtGeneralUser" enumTypeId="UserGroupType" description="General User"/>
+    <userGroups userGroupId="MK_EMPLOYEE" description="Employees at MK Decision" groupTypeEnumId="UgtGeneralUser"/>
+
+    <!-- Artifact group and authz for Time & Attendance App -->
+    <artifactGroups artifactGroupId="TIME_AND_ATTENDANCE_USERS" description="Time &amp; Attendance App General User (via root screen)">
+        <artifacts artifactName="component://TimeAndAttendance/screen/TimeAndAttendance/TimeTracking.xml" artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="N"/>
+        <artifacts artifactName="component://TimeAndAttendance/screen/TimeAndAttendance/TimeTracking*" artifactTypeEnumId="AT_XML_SCREEN_TRANS" inheritAuthz="Y" nameIsPattern="Y"/>
+        <artifacts artifactName="TimeAndAttendance.TimeAndAttendanceServices*" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y" nameIsPattern="N"/>
+        <authz artifactAuthzId="TIME_AND_ATTENDANCE_USERS" userGroupId="MK_EMPLOYEE" authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
+    </artifactGroups>
+    <artifactGroups artifactGroupId="TIME_AND_ATTENDANCE_ADMIN" description="Time &amp; Attendance App ADMIN (includes access to reports)">
+        <artifacts artifactName="component://TimeAndAttendance/screen/TimeAndAttendance.xml" artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+        <artifacts artifactName="component://TimeAndAttendance/screen/TimeAndAttendance*" artifactTypeEnumId="AT_XML_SCREEN_TRANS" inheritAuthz="Y" nameIsPattern="Y"/>
+        <authz artifactAuthzId="TIME_AND_ATTENDANCE_ADMIN" userGroupId="ADMIN" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+    </artifactGroups>
+
+    <moqui.entity.document.DataDocument dataDocumentId="EmployeeHours" indexName="EmployeeHours" documentName="EmployeeHours" primaryEntityName="mantle.party.Party"/>
+    <moqui.entity.document.DataDocumentField dataDocumentId="EmployeeHours" fieldPath="partyId" fieldNameAlias="employeeId"/>
+    <moqui.entity.document.DataDocumentField dataDocumentId="EmployeeHours" fieldPath="person:firstName" fieldNameAlias="FirstName"/>
+    <moqui.entity.document.DataDocumentField dataDocumentId="EmployeeHours" fieldPath="person:lastName" fieldNameAlias="LastName"/>
+    <moqui.entity.document.DataDocumentField dataDocumentId="EmployeeHours" fieldPath="mantle.work.time.TimeEntry:hours" fieldNameAlias="hoursWorked" functionName="sum"/>
+    <moqui.entity.document.DataDocumentField dataDocumentId="EmployeeHours" fieldPath="roles:roleTypeId" defaultDisplay="N"/>
+    <moqui.entity.document.DataDocumentField dataDocumentId="EmployeeHours" fieldPath="mantle.work.time.TimeEntry:fromDate" defaultDisplay="N"/>
+    <moqui.entity.document.DataDocumentField dataDocumentId="EmployeeHours" fieldPath="mantle.work.time.TimeEntry:thruDate" defaultDisplay="N"/>
+    <moqui.entity.document.DataDocumentCondition dataDocumentId="EmployeeHours" fieldNameAlias="roleTypeId" operator="equals" fieldValue="Employee"/>
+    <moqui.entity.document.DataDocumentCondition dataDocumentId="EmployeeHours" fieldNameAlias="hoursWorked" operator="greater" fieldValue="0"/>
+    <moqui.basic.Enumeration enumId="RqtPTO" enumTypeId="RequestType" description="PTO Request"/>
+</entity-facade-xml>

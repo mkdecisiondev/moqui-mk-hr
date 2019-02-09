@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<screen require-authentication="anonymous-all"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        default-menu-title="PTO" default-menu-index="2">
+
+    <always-actions><set field="partyId" from="ec.user.userAccount.partyId"/></always-actions>
+
+    <transition name="createPTORequest"><service-call name="TimeAndAttendanceServices.create#PTORequest"/>
+        <default-response url="."/></transition>
+
+    <!--<transition name="getTimeEntries">-->
+        <!--<service-call name="TimeAndAttendanceServices.get#TimeEntriesForFullCalendar" web-send-json-response="eventList"-->
+                      <!--in-map="context"/>-->
+        <!--<default-response type="none"/>-->
+    <!--</transition>-->
+
+    <actions>
+        <if condition="partyId"><then>
+            <entity-find-one entity-name="mantle.party.PersonAndUserAccount" value-field="personAndUserAccount"/>
+            <service-call name="mantle.party.ContactServices.get#PrimaryEmailAddress" out-map="primaryEmail"
+                          in-map="[partyId:partyId]"/>
+        </then><else>
+            <set field="personAndUserAccount" from="ec.user.userAccount"/>
+        </else>
+        </if>
+
+        <entity-find entity-name="mantle.request.Request" list="PTORequestList">
+            <search-form-inputs default-order-by="-requestDate"/>
+            <econdition field-name="filedByPartyId" value="${partyId}"/>
+            <!--Eventually add a new enum 'RqtPTO'-->
+            <econdition field-name="requestTypeEnumId" value="RqtPTO"/>
+        </entity-find>
+    </actions>
+
+    <widgets>
+        <label type="h1" text="PTO"/>
+        <label type="h3" text="Welcome, ${personAndUserAccount.firstName} ${personAndUserAccount.lastName}"/>
+
+        <container-dialog id="RequestPTODialog" button-text="Submit a PTO Request">
+            <form-single name="RequestPTOForm" transition="createPTORequest">
+
+                <field name="startDate"><default-field tooltip="mm/dd/yy"><text-line size="8"/></default-field></field>
+                <field name="endDate"><default-field tooltip="mm/dd/yy"><text-line size="8"/></default-field></field>
+                <field name="hoursRequested"><default-field><text-line size="5"/></default-field></field>
+                <field name="description"><default-field><text-area cols="60" rows="3"/></default-field></field>
+
+                <field name="submitButton"><default-field title="Submit Request"><submit/></default-field></field>
+            </form-single>
+        </container-dialog>
+
+        <form-list name="PTORequestList" list="PTORequestList" skip-form="true" header-dialog="true" saved-finds="true">
+            <field name="requestName"><default-field title="Your Requests"><display/></default-field></field>
+            <field name="description"><default-field title="Description"><display/></default-field></field>
+            <field name="statusId"><default-field title="Status"><display/></default-field></field>
+            <form-list-column><field-ref name="requestName"/></form-list-column>
+            <form-list-column><field-ref name="description"/></form-list-column>
+            <form-list-column><field-ref name="statusId"/></form-list-column>
+        </form-list>
+    </widgets>
+</screen>

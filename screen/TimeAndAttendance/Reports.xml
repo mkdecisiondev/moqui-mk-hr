@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<screen require-authentication="anonymous-all"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        default-menu-title="Reports" default-menu-index="3">
+
+    <always-actions><set field="partyId" from="ec.user.userAccount.partyId"/></always-actions>
+
+    <transition name="taskDetail"><default-response url="../Task/TaskDetail"/></transition>
+
+    <transition name="recordTimeEntry"><service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
+        <default-response url="."/></transition>
+    <transition name="clockInTimeEntry"><service-call name="TimeAndAttendanceServices.create#TimeEntryClockIn" in-map="context"/>
+        <default-response url="."/></transition>
+    <transition name="editTimeEntry"><service-call name="TimeAndAttendanceServices.edit#TimeEntry" in-map="context"/>
+        <default-response url="."/></transition>
+    <actions>
+        <if condition="partyId"><then>
+            <entity-find-one entity-name="mantle.party.PersonAndUserAccount" value-field="personAndUserAccount"/>
+            <service-call name="mantle.party.ContactServices.get#PrimaryEmailAddress" out-map="primaryEmail"
+                          in-map="[partyId:partyId]"/>
+        </then><else>
+            <set field="personAndUserAccount" from="ec.user.userAccount"/>
+        </else>
+        </if>
+
+        <service-call name="TimeAndAttendanceServices.handle#FilterDate" in-map="context" out-map="context"/>
+        <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
+            <search-form-inputs default-order-by="-fromDate"/>
+            <econdition field-name="partyId"/>
+        </entity-find>
+        <filter-map-list list="timeEntryList" to-list="openTimeEntryList">
+            <field-map field-name="thruDate" from="null"/></filter-map-list>
+        <set field="openTimeEntry" from="openTimeEntryList ? openTimeEntryList[0] : null"/>
+        <if condition="openTimeEntry">
+            <set field="timeEntryId" from="openTimeEntry.timeEntryId"/>
+        </if>
+
+        <set field="docs" from="ec.entity.getDataDocuments('EmployeeHours', null, null, null)" />
+        <script>println "docs"</script>
+        <script>println docs</script>
+        <script>println "docs[0]"</script>
+        <script>println docs[0]</script>
+        <script>println "docs[0].'mantle.work.time.TimeEntry'"</script>
+        <script>println docs[0].'mantle.work.time.TimeEntry'</script>
+        <script>println "docs[0].'mantle.work.time.TimeEntry'[0].fromDate"</script>
+        <script>println docs[0].'mantle.work.time.TimeEntry'[0].fromDate</script>
+
+        <script>println "reportType"</script>
+        <script>println reportType</script>
+        <script>println "modifiedReportFrom"</script>
+        <script>println modifiedReportFrom</script>
+        <script>println "modifiedReportThru"</script>
+        <script>println modifiedReportThru</script>
+        <script>println "entityValueList"</script>
+        <script>println entityValueList</script>
+    </actions>
+
+    <widgets>
+        <label type="h3" text="Time and Attendance Reports"/>
+        <form-single name="ReportTypeSelection" transition=".">
+            <field name="reportType"><default-field title=""><drop-down><option key="Personal" text="Personal"/>
+                <option key="AllEmployees" text="All Employees"/></drop-down></default-field></field>
+            <field name="reportFrom"><default-field title="From"><date-time type="date" format="yyyy-MM-dd"/></default-field></field>
+            <field name="reportThru"><default-field title="Thru"><date-time type="date" format="yyyy-MM-dd"/></default-field></field>
+            <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
+            <field-layout>
+                <field-row-big>
+                    <field-ref name="reportType"/>
+                    <field-ref name="reportFrom"/>
+                    <field-ref name="reportThru"/>
+                    <field-ref name="submitButton"/>
+                </field-row-big>
+            </field-layout>
+        </form-single>
+
+        <section name="Report" condition="reportType=='AllEmployees'">
+            <widgets>
+                <form-list name="AllEmployeesReport" list="entityValueList" skip-form="true" dynamic="true" header-dialog="true" show-csv-button="false" show-all-button="false">
+                    <entity-find entity-name="DataDocument.EmployeeHours" list="entityValueList" cache="false">
+                        <econditions combine="and">
+                            <econdition field-name="fromDate" operator="greater-equals" from="modifiedReportFrom"/>
+                            <econdition field-name="thruDate" operator="less" from="modifiedReportThru"/>
+                        </econditions>
+                        <search-form-inputs/></entity-find>
+                    <field name="EmployeeHours"><header-field><hidden/></header-field></field>
+                    <auto-fields-entity entity-name="DataDocument.EmployeeHours" field-type="find-display"/>
+                    <field name="findButton"><header-field title="Find"><submit/></header-field></field>
+                </form-list>
+            </widgets>
+            <fail-widgets>
+                <form-list name="PersonalReport" list="reportTimeEntryList" skip-form="true" header-dialog="true" saved-finds="true">
+                    <entity-find entity-name="mantle.work.time.TimeEntry" list="reportTimeEntryList">
+                        <search-form-inputs default-order-by="-fromDate"/>
+                        <econditions combine="and">
+                            <econdition field-name="partyId"/>
+                            <econdition field-name="fromDate" operator="greater-equals" from="modifiedReportFrom"/>
+                            <econdition field-name="thruDate" operator="less" from="modifiedReportThru"/>
+                        </econditions>
+                    </entity-find>
+                    <field name="timeEntryId"><default-field title="ID (Click to Edit Entry)"><container-dialog id="EditTimeDialog" button-text="${timeEntryId}">
+                        <form-single name="EditTimeForm" transition="editTimeEntry">
+                            <field name="partyId"><default-field><hidden/></default-field></field>
+                            <field name="timeEntryId"><default-field title="Time Entry ID"><hidden/></default-field></field>
+                            <field name="fromDate"><default-field title="Clock-In Time"><date-time/></default-field></field>
+                            <field name="thruDate"><default-field title="Clock-Out Time"><date-time/></default-field></field>
+                            <field name="comments"><default-field><text-area cols="60" rows="3"/></default-field></field>
+                            <field name="submitButton"><default-field title="Edit Time Entry"><submit/></default-field></field>
+                        </form-single></container-dialog></default-field></field>
+                    <field name="fromDate"><header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
+                        <default-field title="Clock-In Time"><display format="MM-dd-yy / hh:mm a / E "/></default-field></field>
+                    <field name="thruDate"><header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
+                        <default-field title="Clock-Out Time"><display format="MM-dd-yy / hh:mm a / E "/></default-field></field>
+                    <field name="hours"><header-field show-order-by="true"/>
+                        <default-field><display format="0.00"/></default-field></field>
+                    <field name="comments"><default-field><display/></default-field></field>
+                    <field name="findButton"><header-field title="Find"><submit/></header-field>
+                        <default-field><display text=" "/></default-field></field>
+                    <form-list-column><field-ref name="timeEntryId"/></form-list-column>
+                    <form-list-column><field-ref name="fromDate"/></form-list-column>
+                    <form-list-column><field-ref name="thruDate"/></form-list-column>
+                    <form-list-column><field-ref name="hours"/></form-list-column>
+                    <form-list-column><field-ref name="comments"/><field-ref name="findButton"/></form-list-column>
+                </form-list>
+            </fail-widgets>
+        </section>
+    </widgets>
+</screen>
