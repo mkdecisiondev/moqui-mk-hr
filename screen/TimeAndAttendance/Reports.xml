@@ -25,7 +25,6 @@
         </else>
         </if>
 
-
         <service-call name="TimeAndAttendanceServices.handle#FilterDate" in-map="context" out-map="context"/>
         <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
             <search-form-inputs default-order-by="-fromDate"/>
@@ -39,45 +38,13 @@
         </if>
 
         <set field="docs" from="ec.entity.getDataDocuments('EmployeeHours', null, null, null)" />
-        <script>println "docs"</script>
-        <script>println docs</script>
-        <script>println "docs[0]"</script>
-        <script>println docs[0]</script>
-        <script>println "docs[0].'mantle.work.time.TimeEntry'"</script>
-        <script>println docs[0].'mantle.work.time.TimeEntry'</script>
-        <script>println "docs[0].'mantle.work.time.TimeEntry'[0].fromDate"</script>
-        <script>println docs[0].'mantle.work.time.TimeEntry'[0].fromDate</script>
-
-        <script>println "reportType"</script>
-        <script>println reportType</script>
-        <script>println "modifiedReportFrom"</script>
-        <script>println modifiedReportFrom</script>
-        <script>println "modifiedReportThru"</script>
-        <script>println modifiedReportThru</script>
-        <script>println "entityValueList"</script>
-        <script>println entityValueList</script>
-
-        <script>println "context"</script>
-        <script>println context</script>
-
-        <script>println "personAndUserAccount.userId"</script>
-        <script>println personAndUserAccount.userId</script>
-        <entity-find entity-name="moqui.security.UserGroupMember" list="isAdmin">
-            <econdition field-name="userId" from="personAndUserAccount.userId"/>
-            <econdition field-name="userGroupId" value="ADMIN"/>
-            <econdition field-name="thruDate" value="" operator="equals"/>
-        </entity-find>
-
-        <script>println "isAdmin"</script>
-        <script>println isAdmin</script>
-
 
     </actions>
 
     <widgets>
         <label type="h3" text="Time and Attendance Reports"/>
 
-        <section name="ReportSelector" condition="isAdmin">
+        <section name="ReportSelector" condition="ec.user.hasPermission('TimeEntryReports')">
             <widgets>
                 <form-single name="AdminReportTypeSelection" transition=".">
                     <field name="reportType"><default-field title=""><drop-down><option key="Personal" text="Personal"/>
@@ -113,7 +80,6 @@
                 </form-single>
             </fail-widgets>
         </section>
-
 
         <section name="Report" condition="reportType=='AllEmployees'">
             <widgets>
