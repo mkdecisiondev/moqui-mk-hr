@@ -38,7 +38,8 @@
         </if>
 
         <set field="docs" from="ec.entity.getDataDocuments('EmployeeHours', null, null, null)" />
-
+        <entity-find entity-name="mantle.party.PersonWithUserAccount" list="EmployeeList">
+        </entity-find>
     </actions>
 
     <widgets>
@@ -48,9 +49,10 @@
             <widgets>
                 <form-single name="AdminReportTypeSelection" transition=".">
                     <field name="reportType"><default-field title=""><drop-down><option key="Personal" text="Personal"/>
-                        <option key="AllEmployees" text="All Employees"/></drop-down></default-field></field>
+                        <option key="AllEmployees" text="All Employees"/><option key="IndividualEmployee" text="Individual Employee"/></drop-down></default-field></field>
                     <field name="reportFrom"><default-field title="From"><date-time type="date" format="yyyy-MM-dd"/></default-field></field>
                     <field name="reportThru"><default-field title="Thru"><date-time type="date" format="yyyy-MM-dd"/></default-field></field>
+                    <field name="Employee"><default-field><hidden/></default-field></field>
                     <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
                     <field-layout>
                         <field-row-big>
@@ -81,7 +83,7 @@
             </fail-widgets>
         </section>
 
-        <section name="Report" condition="reportType=='AllEmployees'">
+        <section name="AllEmployeesReport" condition="reportType=='AllEmployees'">
             <widgets>
                 <form-list name="AllEmployeesReport" list="entityValueList" skip-form="true" dynamic="true" header-dialog="true" show-csv-button="false" show-all-button="false">
                     <entity-find entity-name="DataDocument.EmployeeHours" list="entityValueList" cache="false">
@@ -95,7 +97,10 @@
                     <field name="findButton"><header-field title="Find"><submit/></header-field></field>
                 </form-list>
             </widgets>
-            <fail-widgets>
+        </section>
+
+        <section name="PersonalReport" condition="reportType=='Personal'">
+            <widgets>
                 <form-list name="PersonalReport" list="reportTimeEntryList" skip-form="true" header-dialog="true" saved-finds="true">
                     <entity-find entity-name="mantle.work.time.TimeEntry" list="reportTimeEntryList">
                         <search-form-inputs default-order-by="-fromDate"/>
@@ -129,7 +134,65 @@
                     <form-list-column><field-ref name="hours"/></form-list-column>
                     <form-list-column><field-ref name="comments"/><field-ref name="findButton"/></form-list-column>
                 </form-list>
-            </fail-widgets>
+            </widgets>
+        </section>
+
+        <section name="IndividualEmployeeReport" condition="reportType=='IndividualEmployee'">
+            <widgets>
+                <form-single name="EmployeeSelector" transition=".">
+                    <field name="Employee"><default-field>
+                        <drop-down allow-empty="false"><list-options list="EmployeeList"/></drop-down>
+                    </default-field></field>
+                    <field name="partyId"><default-field><hidden/></default-field></field>
+                    <field name="reportType"><default-field><hidden/></default-field></field>
+                    <field name="fromDate"><default-field><hidden/></default-field></field>
+                    <field name="thruDate"><default-field><hidden/></default-field></field>
+                    <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
+                    <field-layout>
+                        <field-row-big>
+                            <field-ref name="Employee"/>
+                            <field-ref name="submitButton"/>
+                        </field-row-big>
+                    </field-layout>
+                </form-single>
+                <section name="IndividualReport" condition="reportType=='IndividualEmployee' &amp;&amp; Employee">
+                    <widgets>
+                        <form-list name="IndividualReport" list="individualReportTimeEntryList" skip-form="true" header-dialog="true" saved-finds="true">
+                            <entity-find entity-name="mantle.work.time.TimeEntry" list="reportTimeEntryList">
+                                <search-form-inputs default-order-by="-fromDate"/>
+                                <econditions combine="and">
+                                    <econdition field-name="partyId" from="Employee"/>
+                                    <econdition field-name="fromDate" operator="greater-equals" from="modifiedReportFrom"/>
+                                    <econdition field-name="thruDate" operator="less" from="modifiedReportThru"/>
+                                </econditions>
+                            </entity-find>
+                            <field name="timeEntryId"><default-field title="ID (Click to Edit Entry)"><container-dialog id="EditTimeDialog" button-text="${timeEntryId}">
+                                <form-single name="EditTimeForm" transition="editTimeEntry">
+                                    <field name="partyId"><default-field><hidden/></default-field></field>
+                                    <field name="timeEntryId"><default-field title="Time Entry ID"><hidden/></default-field></field>
+                                    <field name="fromDate"><default-field title="Clock-In Time"><date-time/></default-field></field>
+                                    <field name="thruDate"><default-field title="Clock-Out Time"><date-time/></default-field></field>
+                                    <field name="comments"><default-field><text-area cols="60" rows="3"/></default-field></field>
+                                    <field name="submitButton"><default-field title="Edit Time Entry"><submit/></default-field></field>
+                                </form-single></container-dialog></default-field></field>
+                            <field name="fromDate"><header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
+                                <default-field title="Clock-In Time"><display format="MM-dd-yy / hh:mm a / E "/></default-field></field>
+                            <field name="thruDate"><header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
+                                <default-field title="Clock-Out Time"><display format="MM-dd-yy / hh:mm a / E "/></default-field></field>
+                            <field name="hours"><header-field show-order-by="true"/>
+                                <default-field><display format="0.00"/></default-field></field>
+                            <field name="comments"><default-field><display/></default-field></field>
+                            <field name="findButton"><header-field title="Find"><submit/></header-field>
+                                <default-field><display text=" "/></default-field></field>
+                            <form-list-column><field-ref name="timeEntryId"/></form-list-column>
+                            <form-list-column><field-ref name="fromDate"/></form-list-column>
+                            <form-list-column><field-ref name="thruDate"/></form-list-column>
+                            <form-list-column><field-ref name="hours"/></form-list-column>
+                            <form-list-column><field-ref name="comments"/><field-ref name="findButton"/></form-list-column>
+                        </form-list>
+                    </widgets>
+                </section>
+            </widgets>
         </section>
     </widgets>
 </screen>

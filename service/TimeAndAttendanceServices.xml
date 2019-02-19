@@ -13,9 +13,6 @@
         </out-parameters>
 
         <actions>
-            <script>
-                EntityValue queryForTimeEntry = ec.entity.find("mantle.work.time.TimeEntry").condition( [ "timeEntryId" : timeEntryId, "partyId" : partyId ] ).one()
-            </script>
             <if condition="queryForTimeEntry">
                 <if condition="!fromDate">
                     <set field="fromDate" from="queryForTimeEntry.fromDate"/>
@@ -32,22 +29,90 @@
 
     <service verb="create" noun="PTORequest">
         <in-parameters>
-            <!--Eventually add a new enum 'RqtPTO'-->
             <parameter name="requestTypeEnumId" default-value="RqtPTO"/>
             <parameter name="customerPartyId" default="ec.user.userAccount?.partyId"/>
             <parameter name="assignToPartyId" default-value="EX_JOHN_DOE"/>
             <parameter name="statusId" default-value="ReqSubmitted"/>
+            <parameter name="requestResolutionEnumId" default-value="RrUnderReview"/>
             <parameter name="description"/>
-            <parameter name="startDate"/>
-            <parameter name="endDate"/>
-            <parameter name="hoursRequested"/>
+            <parameter name="startDate" required="true"/>
+            <parameter name="endDate" required="true"/>
+            <parameter name="hoursRequested" required="true"/>
         </in-parameters>
         <out-parameters>
         </out-parameters>
 
         <actions>
-            <set field="requestName" default-value="TimeOffRequest // ${customerPartyId} // ${startDate} - ${endDate} // ${hoursRequested}hrs"/>
+            <set field="requestName" default-value="Start Date: ${startDate}\nEnd Date: ${endDate}\nHours Requested: ${hoursRequested}"/>
             <service-call name="mantle.request.RequestServices.create#Request" in-map="context"/>
+            <!--<service-call name="org.moqui.impl.EmailServices.send#EmailTemplate" in-map="[emailTemplateId:'test', emailTypeEnumId:'EMT_SYSTEM', toAddresses:'young.hsu@mkdecision.com']"/>-->
+        </actions>
+    </service>
+
+    <service verb="edit" noun="PTORequest">
+        <in-parameters>
+            <parameter name="requestId"/>
+            <parameter name="requestName"/>
+            <parameter name="description"/>
+        </in-parameters>
+        <out-parameters>
+        </out-parameters>
+
+        <actions>
+            <entity-find entity-name="mantle.request.Request" list="query">
+                <econdition field-name="requestId"/>
+            </entity-find>
+
+            <if condition="description!=query[0].description || requestName!=query[0].requestName">
+                <set field="statusId" value="ReqInProgress"/>
+                <set field="requestResolutionEnumId" value="RrUnderReview"/>
+                <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
+            </if>
+        </actions>
+    </service>
+
+    <service verb="approve" noun="PTORequest">
+        <in-parameters>
+            <parameter name="requestId"/>
+        </in-parameters>
+        <out-parameters>
+        </out-parameters>
+
+        <actions>
+            <set field="requestResolutionEnumId" value="RrApproved"/>
+            <set field="requestId" from="requestId"/>
+            <set field="statusId" value="ReqCompleted"/>
+            <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
+        </actions>
+    </service>
+
+    <service verb="deny" noun="PTORequest">
+        <in-parameters>
+            <parameter name="requestId"/>
+        </in-parameters>
+        <out-parameters>
+        </out-parameters>
+
+        <actions>
+            <set field="requestResolutionEnumId" value="RrDenied"/>
+            <set field="requestId" from="requestId"/>
+            <set field="statusId" value="ReqCompleted"/>
+            <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
+        </actions>
+    </service>
+
+    <service verb="undecide" noun="PTORequest">
+        <in-parameters>
+            <parameter name="requestId"/>
+        </in-parameters>
+        <out-parameters>
+        </out-parameters>
+
+        <actions>
+            <set field="requestResolutionEnumId" value="RrUnderReview"/>
+            <set field="requestId" from="requestId"/>
+            <set field="statusId" value="ReqInProgress"/>
+            <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
         </actions>
     </service>
 
@@ -77,62 +142,4 @@
             <parameter name="reportFrom"/>
         </in-parameters>
     </service>
-
-    <!--<service verb="get" noun="TimeEntriesForFullCalendar">-->
-        <!--<in-parameters>-->
-
-            <!--<parameter name="partyId"/>-->
-            <!--<parameter name="partyIdList" type="List"><parameter name="partyId"/></parameter>-->
-
-            <!--<parameter name="start" required="true"/>-->
-            <!--<parameter name="end" required="true"/>-->
-            <!--<parameter name="titleGString"/>-->
-            <!--<parameter name="urlGString"/>-->
-        <!--</in-parameters>-->
-
-        <!--<out-parameters>-->
-            <!--<parameter name="eventList" type="List">-->
-                <!--<parameter name="eventMap" type="Map">-->
-                    <!--<parameter name="id"/>-->
-                    <!--<parameter name="title"/>-->
-                    <!--<parameter name="start"><description>actualStartDate or estimatedStartDate as ISO8601 formatted String</description></parameter>-->
-                    <!--<parameter name="end"><description>actualCompletionDate or estimatedCompletionDate (or if null start date +-->
-                        <!--actualWorkDuration, estimatedWorkDuration, or estimatedWorkTime) as a ISO8601 (yyyy-MM-dd'T'HH:mm:ss) formatted String</description></parameter>-->
-                    <!--&lt;!&ndash; NOTE: consider supporting allDay, color, etc in the future with WorkEffort fields &ndash;&gt;-->
-                    <!--<parameter name="url"><description>Only returned if urlGString is specified</description></parameter>-->
-                <!--</parameter>-->
-            <!--</parameter>-->
-        <!--</out-parameters>-->
-
-        <!--<actions>-->
-            <!--&lt;!&ndash; start and end are ISO8601 date strings &ndash;&gt;-->
-            <!--<set field="startTs" from="ec.l10n.parseTimestamp(start.toString() + ' 00:00:00.000', 'yyyy-MM-dd HH:mm:ss.SSS')"/>-->
-            <!--<set field="endTs" from="ec.l10n.parseTimestamp(end.toString() + ' 23:59:59.999', 'yyyy-MM-dd HH:mm:ss.SSS')"/>-->
-            <!--&lt;!&ndash; <log level="warn" message="=========== Event FullCalendarData start ${start} - ${startTs} end ${end} - ${endTs}"/> &ndash;&gt;-->
-            <!--<set field="startDate" from="ec.l10n.parseDate(start.toString(), 'yyyy-MM-dd')"/>-->
-            <!--<set field="endDate" from="ec.l10n.parseDate(end.toString(), 'yyyy-MM-dd')"/>-->
-
-
-            <!--<set field="partyIdSet" from="new HashSet()"/>-->
-            <!--<if condition="partyId"><script>partyIdSet.add(partyId)</script></if>-->
-            <!--<if condition="partyIdList"><script>partyIdSet.addAll(partyIdList)</script></if>-->
-            <!--<script>println "||||||||||||||||||||||||||||||||||||"</script>-->
-            <!--<script>println context</script>-->
-
-            <!--<set field="eventList" from="[]"/>-->
-            <!--&lt;!&ndash;<if condition="!facilityIdSet &amp;&amp; !partyIdSet &amp;&amp; !assetIdSet"><return/></if>&ndash;&gt;-->
-
-            <!--<entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">-->
-                <!--<econdition field-name="partyId" operator="in" from="partyIdSet" ignore-if-empty="true"/>-->
-                <!--&lt;!&ndash; for events look for start date within the range &ndash;&gt;-->
-
-                <!--<select-field field-name="timeEntryId,fromDate,thruDate"/>-->
-            <!--</entity-find>-->
-            <!--<script>println context</script>-->
-            <!--<iterate list="timeEntryList" entry="timeEntry">-->
-                <!--<set field="title" from="timeEntry.timeEntryId"/>-->
-                <!--<set field="start" from="timeEntry.timeEntryId"/>-->
-            <!--</iterate>-->
-        <!--</actions>-->
-    <!--</service>-->
 </services>
