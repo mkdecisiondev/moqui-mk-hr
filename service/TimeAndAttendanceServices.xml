@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <services>
-    <service verb="edit" noun="TimeEntry">
+    <service verb="create" noun="TimeEntryClockIn">
         <in-parameters>
-            <parameter name="timeEntryId" required="true"/>
-            <parameter name="fromDate"/>
-            <parameter name="thruDate"/>
             <parameter name="comments"/>
             <parameter name="partyId"/>
         </in-parameters>
@@ -13,6 +10,41 @@
         </out-parameters>
 
         <actions>
+            <set field="fromDate" from="ec.user.nowTimestamp"/>
+            <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
+        </actions>
+    </service>
+
+    <service verb="calculate" noun="SumOfHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
+        <in-parameters>
+            <parameter name="timeEntryList" type="List" />
+        </in-parameters>
+    </service>
+
+    <service verb="handle" noun="FilterDate" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="handleFilterDate">
+        <in-parameters>
+            <parameter name="reportThru"/>
+            <parameter name="reportFrom"/>
+        </in-parameters>
+    </service>
+
+    <service verb="edit" noun="TimeEntry">
+        <in-parameters>
+            <parameter name="timeEntryId" required="true"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate">
+                <!--TODO: Still need a way to validate this parameter to always be later than the fromDate-->
+                <time-range after="now" format="yyyy-MM-dd hh:mm"/></parameter>
+            <parameter name="comments"/>
+            <parameter name="partyId"/>
+        </in-parameters>
+        <out-parameters>
+        </out-parameters>
+
+        <actions>
+            <script>
+                EntityValue queryForTimeEntry = ec.entity.find("mantle.work.time.TimeEntry").condition( [ "timeEntryId" : timeEntryId, "partyId" : partyId ] ).one()
+            </script>
             <if condition="queryForTimeEntry">
                 <if condition="!fromDate">
                     <set field="fromDate" from="queryForTimeEntry.fromDate"/>
@@ -114,32 +146,5 @@
             <set field="statusId" value="ReqInProgress"/>
             <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
         </actions>
-    </service>
-
-    <service verb="create" noun="TimeEntryClockIn">
-        <in-parameters>
-            <parameter name="comments"/>
-            <parameter name="partyId"/>
-        </in-parameters>
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
-            <set field="fromDate" from="ec.user.nowTimestamp"/>
-            <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
-        </actions>
-    </service>
-
-    <service verb="calculate" noun="SumOfHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
-        <in-parameters>
-            <parameter name="timeEntryList" type="List" />
-        </in-parameters>
-    </service>
-
-    <service verb="handle" noun="FilterDate" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="handleFilterDate">
-        <in-parameters>
-            <parameter name="reportThru"/>
-            <parameter name="reportFrom"/>
-        </in-parameters>
     </service>
 </services>

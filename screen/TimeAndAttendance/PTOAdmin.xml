@@ -27,6 +27,7 @@
             </field-layout>
         </form-single>
 
+        <label type="h5" text="Click on the ID or name of a request to approve or deny the request."/>
         <section name="RequestList" condition="display=='All Requests'">
             <widgets>
                 <form-list name="ListRequestsUnresolved" list="requestList" skip-form="true" header-dialog="true">
