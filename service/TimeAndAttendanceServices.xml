@@ -15,6 +15,27 @@
         </actions>
     </service>
 
+    <service verb="store" noun="TimeEntry">
+        <in-parameters>
+            <parameter name="comments"/>
+            <parameter name="partyId"/>
+            <!--<parameter name="hours"/>-->
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+        </in-parameters>
+        <out-parameters>
+        </out-parameters>
+
+        <actions>
+            <if condition="fromDate &gt; thruDate">
+                <message>Clock-out time should be later than clock-in time</message>
+                <else>
+                    <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
+                </else>
+            </if>
+        </actions>
+    </service>
+
     <service verb="calculate" noun="SumOfHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
         <in-parameters>
             <parameter name="timeEntryList" type="List" />
@@ -32,9 +53,7 @@
         <in-parameters>
             <parameter name="timeEntryId" required="true"/>
             <parameter name="fromDate"/>
-            <parameter name="thruDate">
-                <!--TODO: Still need a way to validate this parameter to always be later than the fromDate-->
-                <time-range after="now" format="yyyy-MM-dd hh:mm"/></parameter>
+            <parameter name="thruDate"/>
             <parameter name="comments"/>
             <parameter name="partyId"/>
         </in-parameters>
@@ -42,19 +61,24 @@
         </out-parameters>
 
         <actions>
-            <script>
-                EntityValue queryForTimeEntry = ec.entity.find("mantle.work.time.TimeEntry").condition( [ "timeEntryId" : timeEntryId, "partyId" : partyId ] ).one()
-            </script>
-            <if condition="queryForTimeEntry">
-                <if condition="!fromDate">
-                    <set field="fromDate" from="queryForTimeEntry.fromDate"/>
+            <if condition="thruDate &gt; fromDate">
+                <script>
+                    EntityValue queryForTimeEntry = ec.entity.find("mantle.work.time.TimeEntry").condition( [ "timeEntryId" : timeEntryId, "partyId" : partyId ] ).one()
+                </script>
+                <if condition="queryForTimeEntry">
+                    <if condition="!fromDate">
+                        <set field="fromDate" from="queryForTimeEntry.fromDate"/>
+                    </if>
+                    <if condition="!thruDate">
+                        <set field="thruDate" from="queryForTimeEntry.thruDate"/>
+                    </if>
+                    <service-call name="mantle.work.TimeServices.delete#TimeEntry" in-map="context" out-map="context"/>
+                    <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context" out-map="context"/>
+                    <else><message type="warning">That time entry does not exist for you.</message></else>
                 </if>
-                <if condition="!thruDate">
-                    <set field="thruDate" from="queryForTimeEntry.thruDate"/>
-                </if>
-                <service-call name="mantle.work.TimeServices.delete#TimeEntry" in-map="context" out-map="context"/>
-                <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context" out-map="context"/>
-                <else><message>That time entry does not exist for you.</message></else>
+                <else>
+                    <message>Clock-out time should be later than clock-in time</message>
+                </else>
             </if>
         </actions>
     </service>
