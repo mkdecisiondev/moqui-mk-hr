@@ -1,174 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<services>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-2.1.xsd">
+
     <service verb="create" noun="TimeEntryClockIn">
         <in-parameters>
-            <parameter name="comments"/>
-            <parameter name="partyId"/>
+            <!-- <parameter name="comments"/> -->
+            <!-- <parameter name="partyId"/> -->
+            <!-- <parameter name="timesheetId"/> -->
         </in-parameters>
+
         <out-parameters>
         </out-parameters>
 
         <actions>
-            <set field="fromDate" from="ec.user.nowTimestamp"/>
+            <log message="---------------hitting the service---------------------------"/>
             <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
         </actions>
     </service>
 
-    <service verb="store" noun="TimeEntry">
-        <in-parameters>
-            <parameter name="comments"/>
-            <parameter name="partyId"/>
-            <!--<parameter name="hours"/>-->
-            <parameter name="fromDate"/>
-            <parameter name="thruDate"/>
-        </in-parameters>
-        <out-parameters>
-        </out-parameters>
 
-        <actions>
-            <if condition="fromDate &gt; thruDate">
-                <message>Clock-out time should be later than clock-in time</message>
-                <else>
-                    <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
-                </else>
-            </if>
-        </actions>
-    </service>
-
-    <service verb="calculate" noun="SumOfHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
+<!-- creating new timeSheet -->
+     <service verb="create" noun="TimeSheet">
         <in-parameters>
-            <parameter name="timeEntryList" type="List" />
-        </in-parameters>
-    </service>
-
-    <service verb="handle" noun="FilterDate" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="handleFilterDate">
-        <in-parameters>
-            <parameter name="reportThru"/>
-            <parameter name="reportFrom"/>
-        </in-parameters>
-    </service>
-
-    <service verb="edit" noun="TimeEntry">
-        <in-parameters>
-            <parameter name="timeEntryId" required="true"/>
-            <parameter name="fromDate"/>
-            <parameter name="thruDate"/>
-            <parameter name="comments"/>
             <parameter name="partyId"/>
         </in-parameters>
-        <out-parameters>
-        </out-parameters>
 
         <actions>
-            <if condition="thruDate &gt; fromDate">
-                <script>
-                    EntityValue queryForTimeEntry = ec.entity.find("mantle.work.time.TimeEntry").condition( [ "timeEntryId" : timeEntryId, "partyId" : partyId ] ).one()
-                </script>
-                <if condition="queryForTimeEntry">
-                    <if condition="!fromDate">
-                        <set field="fromDate" from="queryForTimeEntry.fromDate"/>
-                    </if>
-                    <if condition="!thruDate">
-                        <set field="thruDate" from="queryForTimeEntry.thruDate"/>
-                    </if>
-                    <service-call name="mantle.work.TimeServices.delete#TimeEntry" in-map="context" out-map="context"/>
-                    <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context" out-map="context"/>
-                    <else><message type="warning">That time entry does not exist for you.</message></else>
-                </if>
-                <else>
-                    <message>Clock-out time should be later than clock-in time</message>
-                </else>
-            </if>
+            <log message="---------------hitting the service---------------------------"/>
+            <set field="fromDate" from="ec.user.nowTimestamp"/>
+            <set field="statusId" value="TmshInProcess"/>
+            <service-call name="create#mantle.work.time.Timesheet" in-map="context"/>
         </actions>
     </service>
 
-    <service verb="create" noun="PTORequest">
-        <in-parameters>
-            <parameter name="requestTypeEnumId" default-value="RqtPTO"/>
-            <parameter name="customerPartyId" default="ec.user.userAccount?.partyId"/>
-            <parameter name="assignToPartyId" default-value="EX_JOHN_DOE"/>
-            <parameter name="statusId" default-value="ReqSubmitted"/>
-            <parameter name="requestResolutionEnumId" default-value="RrUnderReview"/>
-            <parameter name="description"/>
-            <parameter name="startDate" required="true"/>
-            <parameter name="endDate" required="true"/>
-            <parameter name="hoursRequested" required="true"/>
-        </in-parameters>
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
-            <set field="requestName" default-value="Start Date: ${startDate}\nEnd Date: ${endDate}\nHours Requested: ${hoursRequested}"/>
-            <service-call name="mantle.request.RequestServices.create#Request" in-map="context"/>
-            <!--<service-call name="org.moqui.impl.EmailServices.send#EmailTemplate" in-map="[emailTemplateId:'test', emailTypeEnumId:'EMT_SYSTEM', toAddresses:'young.hsu@mkdecision.com']"/>-->
-        </actions>
-    </service>
-
-    <service verb="edit" noun="PTORequest">
-        <in-parameters>
-            <parameter name="requestId"/>
-            <parameter name="requestName"/>
-            <parameter name="description"/>
-        </in-parameters>
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
-            <entity-find entity-name="mantle.request.Request" list="query">
-                <econdition field-name="requestId"/>
-            </entity-find>
-
-            <if condition="description!=query[0].description || requestName!=query[0].requestName">
-                <set field="statusId" value="ReqInProgress"/>
-                <set field="requestResolutionEnumId" value="RrUnderReview"/>
-                <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
-            </if>
-        </actions>
-    </service>
-
-    <service verb="approve" noun="PTORequest">
-        <in-parameters>
-            <parameter name="requestId"/>
-        </in-parameters>
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
-            <set field="requestResolutionEnumId" value="RrApproved"/>
-            <set field="requestId" from="requestId"/>
-            <set field="statusId" value="ReqCompleted"/>
-            <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
-        </actions>
-    </service>
-
-    <service verb="deny" noun="PTORequest">
-        <in-parameters>
-            <parameter name="requestId"/>
-        </in-parameters>
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
-            <set field="requestResolutionEnumId" value="RrDenied"/>
-            <set field="requestId" from="requestId"/>
-            <set field="statusId" value="ReqCompleted"/>
-            <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
-        </actions>
-    </service>
-
-    <service verb="undecide" noun="PTORequest">
-        <in-parameters>
-            <parameter name="requestId"/>
-        </in-parameters>
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
-            <set field="requestResolutionEnumId" value="RrUnderReview"/>
-            <set field="requestId" from="requestId"/>
-            <set field="statusId" value="ReqInProgress"/>
-            <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
-        </actions>
-    </service>
 </services>
+
+
