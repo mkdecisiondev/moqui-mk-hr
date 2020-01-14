@@ -105,6 +105,13 @@
             </if>
         </actions>
     </service>
+
+    <!-- calculating time -->
+    <service verb="calculate" noun="SumOfHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
+        <in-parameters>
+            <parameter name="timeEntryList" type="List"/>
+        </in-parameters>
+    </service>
     
 
 </services>

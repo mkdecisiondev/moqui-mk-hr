@@ -105,7 +105,7 @@
         <set field="test" />
 
         <script>
-
+            
 
         </script>
 
@@ -118,6 +118,7 @@
 
         <!-- //////////////////////////test//////////////////// -->
 
+        <service-call name="TimeAndAttendanceServices.calculate#SumOfHours" in-map="[timeEntryList:timeEntryList]" out-map="context"/>
 
     </actions>
 
@@ -152,16 +153,10 @@
         </section>
 
         <label type="h1" text="---------------test--------------"/>
-        <label type="h1" text="work: ${test}"/>
+        <label type="h1" text="test: ${test}"/>
         <label type="h1" text="---------------test--------------"/>
 
         <form-list name="PersonalReport" list="timeEntryList" skip-form="true" header-dialog="true" saved-finds="true">
-
-            <!-- <field name="timeEntryId">
-                <default-field title="Time Entry ID">
-                    <display/>
-                </default-field>
-            </field> -->
 
             <field name="timeEntryId"><default-field title="ID (Click to Edit Entry)"><container-dialog id="EditTimeDialog" button-text="${timeEntryId}">
                     <form-single name="EditTimeForm" transition="editTimeEntry">
