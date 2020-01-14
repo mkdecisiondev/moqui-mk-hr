@@ -4,8 +4,7 @@
     <screen-facade>
         <screen location="component://webroot/screen/webroot/apps.xml">
             <subscreens-item name="newTimeAndAttendance" menu-title="TimeAndAttendance" menu-include="true" menu-index="2"
-                location="component://new-moqui-mk-hr/screen/TimeAndAttendance.xml"/>
+                location="component://moqui-mk-hr/screen/TimeAndAttendance.xml"/>
         </screen>
-
     </screen-facade>
 </moqui-conf>

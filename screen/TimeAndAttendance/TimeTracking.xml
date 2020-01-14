@@ -13,6 +13,19 @@
     <transition name="timeSheetCreate"><service-call name="TimeAndAttendanceServices.create#TimeSheet" in-map="context"/>
         <default-response url="."/></transition>
 
+    <!-- start break test service -->
+    <transition name="breakStart"><service-call name="TimeAndAttendanceServices.create#breakStart" in-map="context"/>
+        <default-response url="."/></transition>
+
+    <!-- update the break time -->
+    <transition name="breakStartStop"><service-call name="TimeAndAttendanceServices.store#breakStop" in-map="context"/>
+        <default-response url="."/></transition>
+
+    <!-- edit timeEntry -->
+    <transition name="editTimeEntry"><service-call name="TimeAndAttendanceServices.edit#TimeEntry" in-map="context"/>
+        <default-response url="."/></transition>
+
+
     <always-actions>
         <set field="partyId" from="ec.user.userAccount.partyId"/>
         <!-- <set field="partyId" from="ec.user.userId"/> -->
@@ -23,8 +36,6 @@
     <pre-actions>
         <set field="head_title" value="TFE-project1"/>
     </pre-actions>
-
-
 
 
     <actions>
@@ -39,6 +50,7 @@
                 <set field="personAndUserAccount" from="ec.user.userAccount"/>
             </else>
         </if>
+
 <!-- /////////////////////////////////timesheet///////////////////////////////// -->
 
         <entity-find entity-name="mantle.work.time.Timesheet" list="timeSheet">
@@ -65,11 +77,13 @@
             <then>
                 <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
                     <order-by field-name="-fromDate"/>
+                    <!-- <econdition field-name="workTypeEnumId" value="WktpGeneralLabor"/> -->
                 </entity-find>
             </then>
             <else>
                 <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
                     <search-form-inputs default-order-by="-fromDate"/>
+                    <econdition field-name="workTypeEnumId" value="WktpGeneralLabor"/>
                     <econdition field-name="partyId"/>
                 </entity-find>
             </else>
@@ -88,15 +102,20 @@
 
         <!-- //////////////////////////test//////////////////// -->
 
-        <set field="date" />
+        <set field="test" />
 
         <script>
 
-            date = timeEntryList
 
         </script>
 
         <!-- //////////////////////////test//////////////////// -->
+
+        <entity-find entity-name="mantle.work.time.TimeEntry" list="BreakList">
+            <search-form-inputs default-order-by="-fromDate"/>
+            <econdition field-name="workTypeEnumId" value="WktpPaidBreak"/>
+        </entity-find>
+
         <!-- //////////////////////////test//////////////////// -->
 
 
@@ -105,6 +124,12 @@
 
 
     <widgets>
+        <!-- break button -->
+        <link url="breakStart" text="Start Break"/>
+        <link url="recordTimeEntry" text="Stop Break"/>
+        <!-- <link url="breakStartStop" text="Stop Break"/> -->
+
+
 
         <!-- test button to create time sheet -->
         <link url="timeSheetCreate" text="create timesheet"/>
@@ -127,12 +152,18 @@
         </section>
 
         <label type="h1" text="---------------test--------------"/>
-        <label type="h1" text="sample: ${date}"/>
+        <label type="h1" text="work: ${test}"/>
         <label type="h1" text="---------------test--------------"/>
 
         <form-list name="PersonalReport" list="timeEntryList" skip-form="true" header-dialog="true" saved-finds="true">
-        
-                <!-- <field name="timeEntryId"><default-field title="ID (Click to Edit Entry)"><container-dialog id="EditTimeDialog" button-text="${timeEntryId}">
+
+            <!-- <field name="timeEntryId">
+                <default-field title="Time Entry ID">
+                    <display/>
+                </default-field>
+            </field> -->
+
+            <field name="timeEntryId"><default-field title="ID (Click to Edit Entry)"><container-dialog id="EditTimeDialog" button-text="${timeEntryId}">
                     <form-single name="EditTimeForm" transition="editTimeEntry">
                         <field name="partyId"><default-field><hidden/></default-field></field>
                         <field name="timeEntryId"><default-field title="Time Entry ID"><hidden/></default-field></field>
@@ -141,17 +172,18 @@
                         <field name="comments"><default-field><text-area cols="60" rows="3"/></default-field></field>
                         <field name="submitButton"><default-field title="Edit Time Entry"><submit/></default-field></field>
                     </form-single>
-                </container-dialog></default-field></field> -->
-
-            <field name="timeEntryId">
-                <default-field title="Time Entry ID">
-                    <display/>
-                </default-field>
-            </field>
+                </container-dialog></default-field></field>
 
             <!-- partyId -->
             <field name="partyId">
                 <default-field title="Party ID">
+                    <display/>
+                </default-field>
+            </field>
+
+            <!-- testonly -->
+            <field name="workTypeEnumId">
+                <default-field title="Work Status">
                     <display/>
                 </default-field>
             </field>
@@ -171,6 +203,7 @@
                 </default-field>
             </field>
 
+
             <!-- lastName -->
             <field name="lastName" from="person?.lastName">
                 <default-field title="Last Name">
@@ -178,14 +211,55 @@
                 </default-field>
             </field>
 
-            <field name="fromDate"><header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
+            <field name="fromDate">
+                <header-field show-order-by="true">
+                    <date-period allow-empty="true"/>
+                </header-field>
                 <default-field title="Clock-In Time">
                     <display format="MM-dd-yy / hh:mm a / E "/>
                 </default-field>
             </field>
 
-            <field name="thruDate"><header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
-                <default-field title="Clock-Out Time"><display format="MM-dd-yy / hh:mm a / E "/></default-field></field>
+
+            <!-- /////////////// -->
+
+            <row-actions>
+                <entity-find-one entity-name="mantle.work.time.TimeEntry" value-field="BreakTime">
+                    <!-- <field-map field-name="partyId" operator="equals" from="partyId"/> -->
+                    <field-map field-name="workTypeEnumId" operator="equals" value="WktpPaidBreak"/>
+                    <select-field field-name="fromDate, thruDate"/>
+                </entity-find-one>
+            </row-actions>
+
+            <!-- firstName -->
+            <!-- <field name="fromDate" from="BreakList.fromDate">
+                <default-field title="Break start">
+                    <display />
+                </default-field>
+            </field> -->
+
+            <!-- <field name="fromDate" from="break?.fromDate">
+                <default-field title="Break Start">
+                    <display />
+                </default-field>
+            </field> -->
+
+             <!-- <field name="thruDate" from="break?.thruDate">
+                <default-field title="Break End">
+                    <display />
+                </default-field>
+            </field> -->
+
+            <!-- ////////////////////////////////////// -->
+
+            <field name="thruDate">
+                <header-field show-order-by="true">
+                    <date-period allow-empty="true"/>
+                </header-field>
+                <default-field title="Clock-Out Time">
+                    <display format="MM-dd-yy / hh:mm a / E "/>
+                </default-field>
+            </field>
 
             <field name="hours"><header-field show-order-by="true"/>
                 <default-field><display format="0.00"/></default-field></field>
