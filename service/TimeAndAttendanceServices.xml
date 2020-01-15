@@ -110,6 +110,24 @@
     <service verb="calculate" noun="SumOfHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
         <in-parameters>
             <parameter name="timeEntryList" type="List"/>
+            <parameter name="week" default-value="6"/>
+            <parameter name="day" default-value="MONDAY"/>
+
+        </in-parameters>
+        <actions>
+            <log message="---------------${ec.user.nowTimestamp}---------------------------"/>
+        </actions>
+
+    </service>
+
+     <!-- calculating overtime -->
+    <service verb="calculate" noun="SumOfOverTime" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
+        <in-parameters>
+            <parameter name="timeEntryList" type="List"/>
+            <parameter name="week" default-value="1"/>
+            <parameter name="day"/>
+            <parameter name="overTime" default-value="true"/>
+
         </in-parameters>
     </service>
     

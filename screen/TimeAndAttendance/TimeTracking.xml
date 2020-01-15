@@ -117,8 +117,34 @@
         </entity-find>
 
         <!-- //////////////////////////test//////////////////// -->
+        <set field="day" from="ec.user.nowCalendar.time.day"/>
+
+        <if condition="day == 1">
+            <then>
+                <set field="dayOfTheWeek" value="MONDAY"/>
+            </then>
+            <else-if condition="day == 2">
+                <set field="dayOfTheWeek" value="TUESDAY"/>
+            </else-if>
+            <else-if condition="day == 3">
+                <set field="dayOfTheWeek" value="WEDNESDAY"/>
+            </else-if>
+            <else-if condition="day == 4">
+                <set field="dayOfTheWeek" value="THURSDAY"/>
+            </else-if>
+            <else-if condition="day == 5">
+                <set field="dayOfTheWeek" value="FRIDAY"/>
+            </else-if>
+            <else-if condition="day == 6">
+                <set field="dayOfTheWeek" value="SATURDAY"/>
+            </else-if>
+            <else-if condition="day == 7">
+                <set field="dayOfTheWeek" value="SUNDAY"/>
+            </else-if>
+        </if>
 
         <service-call name="TimeAndAttendanceServices.calculate#SumOfHours" in-map="[timeEntryList:timeEntryList]" out-map="context"/>
+        <service-call name="TimeAndAttendanceServices.calculate#SumOfOverTime" in-map="[timeEntryList:timeEntryList, day:dayOfTheWeek]" out-map="context"/>
 
     </actions>
 
@@ -153,7 +179,8 @@
         </section>
 
         <label type="h1" text="---------------test--------------"/>
-        <label type="h1" text="test: ${test}"/>
+        <label type="h1" text="total hours this week: ${sumOfHours6}"/>
+        <label type="h1" text="total over time hours: ${sumOfHours1}"/>
         <label type="h1" text="---------------test--------------"/>
 
         <form-list name="PersonalReport" list="timeEntryList" skip-form="true" header-dialog="true" saved-finds="true">
