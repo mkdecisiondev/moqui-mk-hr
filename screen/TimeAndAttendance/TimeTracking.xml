@@ -6,9 +6,11 @@
     <!-- clockIn service-->
     <transition name="clockInTimeEntry"><service-call name="TimeAndAttendanceServices.create#TimeEntryClockIn" in-map="context"/>
         <default-response url="."/></transition>
+
     <!-- clockOut service-->
     <transition name="recordTimeEntry"><service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
         <default-response url="."/></transition>
+
     <!-- test to create timesheet -->
     <transition name="timeSheetCreate"><service-call name="TimeAndAttendanceServices.create#TimeSheet" in-map="context"/>
         <default-response url="."/></transition>
@@ -30,12 +32,11 @@
         <set field="partyId" from="ec.user.userAccount.partyId"/>
         <!-- <set field="partyId" from="ec.user.userId"/> -->
         <set field="isAdmin" from="ec.user.isInGroup('ADMIN')"/>
-
     </always-actions>
 
-    <pre-actions>
+    <!-- <pre-actions>
         <set field="head_title" value="TFE-project1"/>
-    </pre-actions>
+    </pre-actions> -->
 
 
     <actions>
@@ -58,7 +59,7 @@
         </entity-find>
 
         <filter-map-list list="timeSheet" to-list="openTimeSheetList">
-            <field-map field-name="thruDate" from="null"/>
+            <!-- <field-map field-name="thruDate" from="null"/> -->
         </filter-map-list>
 
         <set field="timeSheetBoolean" from="openTimeSheetList ? true : false"/>
@@ -66,6 +67,7 @@
         <if condition="timeSheetBoolean">
             <then>
                 <log message="================there is timesheet==================" />
+                <set field="openTimeSheet" value="${timeSheet[0].timesheetId}"/>
             </then>
             <else>
                 <log message="================no time sheet==================" />
@@ -91,7 +93,6 @@
 
         <filter-map-list list="timeEntryList" to-list="openTimeEntryList">
             <field-map field-name="thruDate" from="null"/>
-
         </filter-map-list>
 
         <set field="openTimeEntry" from="openTimeEntryList ? openTimeEntryList[0] : null"/>
@@ -100,23 +101,11 @@
             <set field="timeEntryId" from="openTimeEntry.timeEntryId"/>
         </if>
 
-        <!-- //////////////////////////test//////////////////// -->
-
-        <set field="test" />
-
-        <script>
-            
-
-        </script>
-
-        <!-- //////////////////////////test//////////////////// -->
-
         <entity-find entity-name="mantle.work.time.TimeEntry" list="BreakList">
             <search-form-inputs default-order-by="-fromDate"/>
             <econdition field-name="workTypeEnumId" value="WktpPaidBreak"/>
         </entity-find>
 
-        <!-- //////////////////////////test//////////////////// -->
         <set field="day" from="ec.user.nowCalendar.time.day"/>
 
         <if condition="day == 1">
@@ -146,19 +135,18 @@
         <service-call name="TimeAndAttendanceServices.calculate#SumOfHours" in-map="[timeEntryList:timeEntryList]" out-map="context"/>
         <service-call name="TimeAndAttendanceServices.calculate#SumOfOverTime" in-map="[timeEntryList:timeEntryList, day:dayOfTheWeek]" out-map="context"/>
 
+
     </actions>
 
 
 
     <widgets>
-        <!-- break button -->
-        <link url="breakStart" text="Start Break"/>
-        <link url="recordTimeEntry" text="Stop Break"/>
+        <!-- test break button -->
+        <!-- <link url="breakStart" text="Start Break"/> -->
+        <!-- <link url="recordTimeEntry" text="Stop Break"/> -->
         <!-- <link url="breakStartStop" text="Stop Break"/> -->
 
 
-
-        <!-- test button to create time sheet -->
         <link url="timeSheetCreate" text="create timesheet"/>
 
         <!-- buttons for clock in/out -->
@@ -178,10 +166,10 @@
             </fail-widgets>
         </section>
 
-        <label type="h1" text="---------------test--------------"/>
-        <label type="h1" text="total hours this week: ${sumOfHours6}"/>
-        <label type="h1" text="total over time hours: ${sumOfHours1}"/>
-        <label type="h1" text="---------------test--------------"/>
+        <!-- <label type="h1" text="===========test==========="/> -->
+        <label type="h1" text="Hours worked this week: ${sumOfHours6}"/>
+        <label type="h1" text="OT Hours worked today: ${sumOfHours1}"/>
+        <!-- <label type="h1" text="===========test==========="/> -->
 
         <form-list name="PersonalReport" list="timeEntryList" skip-form="true" header-dialog="true" saved-finds="true">
 
@@ -199,6 +187,12 @@
             <!-- partyId -->
             <field name="partyId">
                 <default-field title="Party ID">
+                    <display/>
+                </default-field>
+            </field>
+
+            <field name="timesheetId">
+                <default-field title="Timesheet ID">
                     <display/>
                 </default-field>
             </field>
@@ -243,17 +237,17 @@
             </field>
 
 
-            <!-- /////////////// -->
+            <!-- ////////////////////////////////////// -->
 
-            <row-actions>
+            <!-- <row-actions>
                 <entity-find-one entity-name="mantle.work.time.TimeEntry" value-field="BreakTime">
-                    <!-- <field-map field-name="partyId" operator="equals" from="partyId"/> -->
+                    <field-map field-name="partyId" operator="equals" from="partyId"/>
                     <field-map field-name="workTypeEnumId" operator="equals" value="WktpPaidBreak"/>
                     <select-field field-name="fromDate, thruDate"/>
                 </entity-find-one>
-            </row-actions>
+            </row-actions> -->
 
-            <!-- firstName -->
+            <!-- break status -->
             <!-- <field name="fromDate" from="BreakList.fromDate">
                 <default-field title="Break start">
                     <display />

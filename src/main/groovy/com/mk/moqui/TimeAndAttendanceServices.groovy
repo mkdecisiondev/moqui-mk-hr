@@ -5,6 +5,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.text.DecimalFormat
 import java.sql.Timestamp
+import java.time.LocalDate
 
 
 public class TimeAndAttendanceServices {
@@ -39,11 +40,12 @@ public class TimeAndAttendanceServices {
                 sumOfHours = sumOfHours + ev.getPlainValueMap(0).hours
             }
         }
-        System.out.println(sumOfHours + " before the check")
+
         if(sumOfHours > 8 && overTime == true){
             sumOfHours -= 8
+        } else if (sumOfHours < 8 && overTime == true) {
+            sumOfHours = 0
         }
-        System.out.println(sumOfHours + " after the check")
 
         DecimalFormat df2 = new DecimalFormat("###.##")
         String result = "sumOfHours"

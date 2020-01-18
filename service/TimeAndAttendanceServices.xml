@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-2.1.xsd">
-
+    <!-- creating new timeEntry -->
     <service verb="create" noun="TimeEntryClockIn">
         <in-parameters>
-            <!-- <parameter name="comments"/> -->
-            <!-- <parameter name="partyId"/> -->
-            <!-- <parameter name="timesheetId"/> -->
+            <parameter name="openTimeSheet"/>
+            <parameter name="timeSheetBoolean" type="Boolean"/>
         </in-parameters>
 
-        <out-parameters>
-        </out-parameters>
-
         <actions>
-            <!-- can be move to just call the service right away -->
-            <log message="---------------hitting the service---------------------------"/>
             <set field="workTypeEnumId" value="WktpGeneralLabor"/>
-            <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
+            <set field="timesheetId" from="openTimeSheet"/>
+
+            <if condition="timeSheetBoolean">
+                <then>
+                    <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
+                </then>
+                <else>
+                    <message type="warning">Create time sheet first</message>
+                </else>
+            </if>
+
         </actions>
     </service>
 
@@ -27,45 +31,30 @@
         </in-parameters>
 
         <actions>
-            <log message="---------------hitting the service---------------------------"/>
             <set field="fromDate" from="ec.user.nowTimestamp"/>
+            <set field="thruDate" from="ec.user.nowTimestamp + 7"/>
+            <!-- fromDate and thruDate needs to be define and the service needs to using cronjob  -->
             <set field="statusId" value="TmshInProcess"/>
             <service-call name="create#mantle.work.time.Timesheet" in-map="context"/>
         </actions>
     </service>
 
     <!-- creating break timeEntry -->
-    <service verb="create" noun="breakStart">
-        <in-parameters>
-        </in-parameters>
-
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
+    <!-- <service verb="create" noun="breakStart">
+        <actions> -->
             <!-- can be move to just call the service right away -->
-            <log message="---------------hitting the service---------------------------"/>
-            <log message="---------------${isAdmin}---------------------------"/>
-            <set field="workTypeEnumId" value="WktpPaidBreak"/>
+            <!-- <set field="workTypeEnumId" value="WktpPaidBreak"/>
             <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
         </actions>
-    </service>
+    </service> -->
 
     <!-- updating the breaktime -->
-    <service verb="store" noun="breakStop">
-        <in-parameters>
-
-        </in-parameters>
-
-        <out-parameters>
-        </out-parameters>
-
-        <actions>
+    <!-- <service verb="store" noun="breakStop">
+        <actions> -->
             <!-- can be move to just call the service right away -->
-            <log message="---------------Stop time---------------------------"/>
-            <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
+            <!-- <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
         </actions>
-    </service>
+    </service> -->
 
     <!-- edit timeEntry -->
      <service verb="edit" noun="TimeEntry">
@@ -76,9 +65,9 @@
             <parameter name="comments"/>
             <parameter name="partyId"/>
             <parameter name="workTypeEnumId"/>
+            <parameter name="timesheetId"/>
+
         </in-parameters>
-        <out-parameters>
-        </out-parameters>
 
         <actions>
             <if condition="thruDate &gt; fromDate">
@@ -95,6 +84,9 @@
                     <if condition="!workTypeEnumId">
                         <set field="workTypeEnumId" from="queryForTimeEntry.workTypeEnumId"/>
                     </if>
+                    <if condition="!timesheetId">
+                        <set field="timesheetId" from="queryForTimeEntry.timesheetId"/>
+                    </if>
                     <service-call name="mantle.work.TimeServices.delete#TimeEntry" in-map="context" out-map="context"/>
                     <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context" out-map="context"/>
                     <else><message type="warning">That time entry does not exist for you.</message></else>
@@ -106,7 +98,7 @@
         </actions>
     </service>
 
-    <!-- calculating time -->
+    <!-- calculating time/week -->
     <service verb="calculate" noun="SumOfHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateSumOfHours">
         <in-parameters>
             <parameter name="timeEntryList" type="List"/>
@@ -114,10 +106,6 @@
             <parameter name="day" default-value="MONDAY"/>
 
         </in-parameters>
-        <actions>
-            <log message="---------------${ec.user.nowTimestamp}---------------------------"/>
-        </actions>
-
     </service>
 
      <!-- calculating overtime -->
