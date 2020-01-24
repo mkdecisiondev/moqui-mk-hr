@@ -40,7 +40,7 @@
 
 
     <actions>
-        
+
         <if condition="partyId">
             <then>
                 <entity-find entity-name="mantle.party.Person" list="newPerson">
@@ -55,7 +55,7 @@
 <!-- /////////////////////////////////timesheet///////////////////////////////// -->
 
         <entity-find entity-name="mantle.work.time.Timesheet" list="timeSheet">
-            <econdition field-name="partyId"/>        
+            <econdition field-name="partyId"/>
         </entity-find>
 
         <filter-map-list list="timeSheet" to-list="openTimeSheetList">

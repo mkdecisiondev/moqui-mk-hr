@@ -9,6 +9,8 @@
         </in-parameters>
 
         <actions>
+            <log message="===============service hitting=================" />
+
             <set field="workTypeEnumId" value="WktpGeneralLabor"/>
             <set field="timesheetId" from="openTimeSheet"/>
 

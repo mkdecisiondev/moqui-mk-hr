@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entity-facade-xml type="seed-initial">
+<!--    loads the css file-->
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="21" resourceTypeEnumId="STRT_STYLESHEET" resourceValue="/button/css/TimeEntryButton.css"/>
+<!--    loads the js file-->
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="134" resourceTypeEnumId="STRT_HEADER_NAVBAR_COMP" resourceValue="/button/Button.js"/>
+
+</entity-facade-xml>
