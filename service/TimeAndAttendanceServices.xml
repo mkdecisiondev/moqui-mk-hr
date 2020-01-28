@@ -120,6 +120,30 @@
 
         </in-parameters>
     </service>
+
+      <!-- TimeSheet Test -->
+    <service verb="calculate" noun="SumOfTimeSheet" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateTimeSheetHours">
+        <in-parameters>
+            <parameter name="timeEntryList" type="List"/>
+            <parameter name="timeSheet" type="ArrayList"/>
+            
+        </in-parameters>
+    </service>
+
+
+    <service verb="create" noun="TestTest">
+        <in-parameters>
+            <parameter name="openTimeSheet"/>
+            <parameter name="timeSheetBoolean" type="Boolean"/>
+        </in-parameters>
+
+        <actions>
+            <log message=" \n\n\n\n hello \n\n\n\n " />
+        </actions>
+    </service>
+
+
+
     
 
 </services>

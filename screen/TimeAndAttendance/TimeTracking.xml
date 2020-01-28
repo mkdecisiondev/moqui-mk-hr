@@ -27,6 +27,12 @@
     <transition name="editTimeEntry"><service-call name="TimeAndAttendanceServices.edit#TimeEntry" in-map="context"/>
         <default-response url="."/></transition>
 
+        <!-- test service -->
+        <transition name="testService">
+            <service-call name="TimeAndAttendanceServices.create#TestTest" in-map="context" out-map="context"/>
+            <default-response url="."/>
+        </transition>
+
 
     <always-actions>
         <set field="partyId" from="ec.user.userAccount.partyId"/>
@@ -67,12 +73,13 @@
         <if condition="timeSheetBoolean">
             <then>
                 <log message="================there is timesheet==================" />
-                <set field="openTimeSheet" value="${timeSheet[0].timesheetId}"/>
+                <set field="openTimeSheet" value="${timeSheet[-1].timesheetId}"/>
             </then>
             <else>
                 <log message="================no time sheet==================" />
             </else>
         </if>
+
 
 <!-- /////////////////////////////////timesheet///////////////////////////////// -->
         <if condition="isAdmin">
@@ -145,6 +152,7 @@
         <!-- <link url="breakStart" text="Start Break"/> -->
         <!-- <link url="recordTimeEntry" text="Stop Break"/> -->
         <!-- <link url="breakStartStop" text="Stop Break"/> -->
+        <link url="testService" text="test"/>
 
 
         <link url="timeSheetCreate" text="create timesheet"/>

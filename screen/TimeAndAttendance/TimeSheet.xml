@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        require-authentication="anonymous-all" default-menu-title="Time Sheet" default-menu-index="2">
+
+   
+
+
+    <always-actions>
+        <set field="partyId" from="ec.user.userAccount.partyId"/>
+    </always-actions>
+
+    <actions>
+
+        <entity-find entity-name="mantle.work.time.Timesheet" list="timeSheetList">
+            <order-by field-name="-fromDate"/>
+            <econdition field-name="partyId"/>
+        </entity-find>
+
+        <filter-map-list list="timeSheet" to-list="openTimeSheetList">
+            <field-map field-name="thruDate" from="null"/>
+        </filter-map-list>
+
+         <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
+            <search-form-inputs default-order-by="-fromDate"/>
+            <econdition field-name="workTypeEnumId" value="WktpGeneralLabor"/>
+            <econdition field-name="partyId"/>
+        </entity-find>
+
+    </actions>
+
+
+
+    <widgets>
+
+        <!-- <label type="h1" text="===========test==========="/> -->
+        <!-- <label type="h1" text="TimeSheet ${timeSheetList}"/> -->
+        <!-- <label type="h1" text="===========test==========="/> -->
+
+        <form-list name="PersonalReport" list="timeSheetList" skip-form="true" header-dialog="true" saved-finds="true">
+
+        <!-- setup an action for every row -->
+            <row-actions>
+                <entity-find-one entity-name="mantle.party.Person" value-field="person">
+                    <field-map field-name="partyId" operator="equals" from="partyId"/>
+                    <select-field field-name="firstName, lastName"/>
+                </entity-find-one>
+
+                <entity-find-one entity-name="mantle.work.time.Timesheet" value-field="timeSheetRow">
+                    <field-map field-name="timesheetId" operator="equals" from="timesheetId"/>
+                </entity-find-one>
+
+                 <service-call name="TimeAndAttendanceServices.calculate#SumOfTimeSheet" in-map="[timeEntryList:timeEntryList, timeSheet:timeSheetRow]" out-map="context"/>
+                <set field="totalWeeklyHours" from="sumOfHours"/>
+            </row-actions>
+
+             <field name="timesheetId">
+                <default-field title="Timesheet ID">
+                    <display/>
+                </default-field>
+            </field>
+
+            <!-- partyId -->
+            <field name="partyId">
+                <default-field title="Party ID">
+                    <display/>
+                </default-field>
+            </field>
+
+            
+
+            <!-- firstName -->
+            <field name="firstName" from="person?.firstName">
+                <default-field title="First Name">
+                    <display />
+                </default-field>
+            </field>
+
+
+            <!-- lastName -->
+            <field name="lastName" from="person?.lastName">
+                <default-field title="Last Name">
+                    <display />
+                </default-field>
+            </field>
+
+            <field name="fromDate">
+                <header-field show-order-by="true">
+                    <date-period allow-empty="true"/>
+                </header-field>
+                <default-field title="From date">
+                    <display format="MM/dd/yy"/>
+                </default-field>
+            </field>
+
+            <field name="thruDate">
+                <header-field show-order-by="true">
+                    <date-period allow-empty="true"/>
+                </header-field>
+                <default-field title="Thru date">
+                    <display format="MM/dd/yy"/>
+                </default-field>
+            </field>
+
+
+             <!-- <field name="hours" from="sumOfHours100001"> -->
+             <field name="hours" from="totalWeeklyHours">
+                <default-field title="Total hours">
+                    <display />
+                </default-field>
+            </field>
+
+            <!-- <field name="hours"><header-field show-order-by="true"/>
+                <default-field><display format="0.00"/></default-field>
+            </field> -->
+
+            <field name="statusId">
+                <default-field title="Status">
+                    <display/>
+                </default-field>
+            </field>
+
+        </form-list>
+
+    </widgets>
+
+</screen>
