@@ -148,6 +148,8 @@
 
 
     <widgets>
+        <label type="h1" text="${timeEntryId}"/>
+
         <!-- test break button -->
         <!-- <link url="breakStart" text="Start Break"/> -->
         <!-- <link url="recordTimeEntry" text="Stop Break"/> -->

@@ -5,23 +5,25 @@
     <service verb="create" noun="TimeEntryClockIn">
         <in-parameters>
             <parameter name="openTimeSheet"/>
-            <parameter name="timeSheetBoolean" type="Boolean"/>
+            <!-- <parameter name="timeSheetBoolean" type="Boolean"/> -->
         </in-parameters>
 
         <actions>
-            <log message="===============service hitting=================" />
+            <log message="===============service hitting clocking=================" />
 
             <set field="workTypeEnumId" value="WktpGeneralLabor"/>
             <set field="timesheetId" from="openTimeSheet"/>
+            <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
+            <log message="=========after======service hitting clocking=================" />
 
-            <if condition="timeSheetBoolean">
+            <!-- <if condition="timeSheetBoolean">
                 <then>
                     <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
                 </then>
                 <else>
                     <message type="warning">Create time sheet first</message>
                 </else>
-            </if>
+            </if> -->
 
         </actions>
     </service>
@@ -130,14 +132,25 @@
     </service>
 
 
-    <service verb="create" noun="TestTest">
+    <service verb="create" noun="TestClockin">
         <in-parameters>
             <parameter name="openTimeSheet"/>
             <parameter name="timeSheetBoolean" type="Boolean"/>
         </in-parameters>
 
         <actions>
-            <log message=" \n\n\n\n hello \n\n\n\n " />
+            <log message=" \n\n\n\n clockin \n\n\n\n " />
+        </actions>
+    </service>
+
+    <service verb="create" noun="TestClockOut">
+        <in-parameters>
+            <parameter name="openTimeSheet"/>
+            <parameter name="timeSheetBoolean" type="Boolean"/>
+        </in-parameters>
+
+        <actions>
+            <log message=" \n\n\n\n clockout \n\n\n\n " />
         </actions>
     </service>
 
