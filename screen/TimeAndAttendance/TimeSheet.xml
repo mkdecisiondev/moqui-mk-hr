@@ -3,8 +3,7 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         require-authentication="anonymous-all" default-menu-title="Time Sheet" default-menu-index="2">
 
-   
-
+    <transition name="showPage"><default-response url="../ExelSheet"/></transition>
 
     <always-actions>
         <set field="partyId" from="ec.user.userAccount.partyId"/>
@@ -54,9 +53,12 @@
                 <set field="totalWeeklyHours" from="sumOfHours"/>
             </row-actions>
 
+            <!-- <link url="clockInTimeEntry" text="Clock in"/> -->
+
              <field name="timesheetId">
                 <default-field title="Timesheet ID">
-                    <display/>
+                    <!-- <display/> -->
+                    <link url="showPage" text="${timesheetId}" link-type="anchor-button"/>
                 </default-field>
             </field>
 
@@ -67,15 +69,12 @@
                 </default-field>
             </field>
 
-            
-
             <!-- firstName -->
             <field name="firstName" from="person?.firstName">
                 <default-field title="First Name">
                     <display />
                 </default-field>
             </field>
-
 
             <!-- lastName -->
             <field name="lastName" from="person?.lastName">
@@ -102,17 +101,12 @@
                 </default-field>
             </field>
 
-
-             <!-- <field name="hours" from="sumOfHours100001"> -->
+            <!-- totalWeeklyHours is coming from service call inside the row-action -->
              <field name="hours" from="totalWeeklyHours">
                 <default-field title="Total hours">
                     <display />
                 </default-field>
             </field>
-
-            <!-- <field name="hours"><header-field show-order-by="true"/>
-                <default-field><display format="0.00"/></default-field>
-            </field> -->
 
             <field name="statusId">
                 <default-field title="Status">

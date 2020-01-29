@@ -3,7 +3,7 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         require-authentication="false" >
 
-        <transition name="clockInTimeEntry"><service-call name="TimeAndAttendanceServices.create#TimeEntryClockIn" in-map="context"/>
+        <transition name="clockInTimeEntry"><service-call name="TimeAndAttendanceServices.create#TestTest" in-map="context"/>
         <default-response url="."/></transition>
 
     <always-actions>

@@ -8,6 +8,8 @@
      <artifactGroups artifactGroupId="TIME_AND_ATTENDANCE_USERS" description="Time &amp; Attendance App General User (via root screen)">
         <artifacts artifactName="component://moqui-mk-hr/screen/TimeAndAttendance/TimeTracking.xml" artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
         <artifacts artifactName="component://moqui-mk-hr/screen/TimeAndAttendance/TimeTracking*" artifactTypeEnumId="AT_XML_SCREEN_TRANS" inheritAuthz="Y" nameIsPattern="Y"/>
+        <artifacts artifactName="component://moqui-mk-hr/screen/TimeAndAttendance/TimeSheet.xml" artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+        <artifacts artifactName="component://moqui-mk-hr/screen/TimeAndAttendance/TimeSheet*" artifactTypeEnumId="AT_XML_SCREEN_TRANS" inheritAuthz="Y" nameIsPattern="Y"/>
         <artifacts artifactName="TimeAndAttendance.TimeAndAttendanceServices*" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y" nameIsPattern="N"/>
         <authz artifactAuthzId="TIME_AND_ATTENDANCE_USERS" userGroupId="MK_EMPLOYEE" authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
     </artifactGroups>

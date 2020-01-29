@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-2.1.xsd">
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-2.1.xsd" require-authentication="anonymous-all">
     <!-- creating new timeEntry -->
     <service verb="create" noun="TimeEntryClockIn">
         <in-parameters>
@@ -126,7 +126,6 @@
         <in-parameters>
             <parameter name="timeEntryList" type="List"/>
             <parameter name="timeSheet" type="ArrayList"/>
-            
         </in-parameters>
     </service>
 
