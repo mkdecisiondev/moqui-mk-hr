@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd" require-authentication="anonymous-all" default-menu-title="Time Sheet v1" default-menu-index="3">
+
+    <transition name="submitTransition"><service-call name="TimeAndAttendanceServices.create#testService" in-map="context"/>
+        <default-response url="."/></transition>
+
+    <always-actions>
+        <set field="partyId" from="ec.user.userAccount.partyId"/>
+        <!-- <set field="isAdmin" from="ec.user.isInGroup('ADMIN')"/> -->
+    </always-actions>
+
+    <actions>
+        
+        <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
+            <search-form-inputs default-order-by="-fromDate"/>
+            <econdition field-name="partyId"/>
+        </entity-find>
+
+        <entity-find entity-name="mantle.party.time.TimePeriod" list="PeriodList">
+            <search-form-inputs default-order-by="-fromDate"/>
+            <econdition field-name="partyId"/>
+        </entity-find>
+
+        <service-call name="TimeAndAttendanceServices.calculate#DayAndHours" in-map="context" out-map="context"/>
+
+    </actions>
+
+    <widgets>
+        <label type="h1" text="=================test====================="/>
+        <label type="h1" text="DayAndHours: ${DayAndHours.timeEntryId}"/>
+        <label type="h1" text="=================test====================="/>
+
+        <label type="h1" text="Pay Period: ${PeriodList[0].fromDate} to ${PeriodList[0].thruDate}"/>
+        <label type="h1" text="Employee: ${ec.user.userAccount.userFullName}"/>
+        <label type="h1" text="partyId: ${partyId}"/>
+        <link url="submitTransition" text="Submit"/>
+
+        <!-- DayAndHours List is output of TimeAndAttendanceServices.calculate#DayAndHours -->
+         <form-list name="PersonalReport" list="DayAndHours" skip-form="true" header-dialog="true" saved-finds="true">
+
+            <row-actions>
+
+                <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryInside">
+                    <field-map field-name="fromDate" operator="equals" from="fromDate"/>
+                    <econdition field-name="partyId"/>
+                </entity-find>
+
+                <!-- service call to calculate the long shift -->
+                 <service-call name="TimeAndAttendanceServices.calculate#checkForLongShift" in-map="[timeEntryInside:timeEntryInside, fromDate:fromDate, thruDate:thruDate]" out-map="context"/>
+                
+                <!-- service call to calculate how many time the user clock in/out -->
+                 <service-call name="TimeAndAttendanceServices.calculate#numberOfClockin" in-map="[timeEntryInside:timeEntryInside, fromDate:fromDate]" out-map="context"/>
+
+            </row-actions>
+
+            <field name="fromDate">
+                <default-field title="Date">
+                    <display/>
+                </default-field>
+            </field>
+
+
+            <field name="hours">
+                <default-field title="Total Time">
+                    <display format="0.00"/>
+                </default-field>
+            </field>
+
+            <!-- the checkForLongShift is output from TimeAndAttendanceServices.calculate#checkForLongShift -->
+            <field name="checkForLongShift">
+                <default-field title="Long Shifts">
+                    <display/>
+                </default-field>
+            </field>
+
+
+            <field name="name4">
+                <default-field title="Long Break">
+                    <display />
+                </default-field>
+            </field>
+
+
+            <field name="test">
+                <default-field title="Break Time">
+                    <display />
+                </default-field>
+            </field>
+            <!-- number of clock in is comming from TimeAndAttendanceServices.calculate#numberOfClockin service -->
+            <field name="numberOfClockin">
+                <default-field title="#Clock">
+                    <display />
+
+                </default-field>
+            </field>
+
+            <field name="comments">
+                <default-field title="Comments">
+                    <display/>
+                </default-field>
+            </field>
+
+        </form-list>
+    </widgets>
+
+</screen>

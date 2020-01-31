@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat
 import java.text.DecimalFormat
 import java.sql.Timestamp
 import java.time.LocalDate
+import groovy.time.TimeDuration
+import groovy.time.TimeCategory 
 
 
 public class TimeAndAttendanceServices {
@@ -90,6 +92,69 @@ public class TimeAndAttendanceServices {
         Map totalHours = ["sumOfHours":df2.format(sumOfHours)]
         return totalHours
 
+    }
+
+    static Map calculateDayAndHours(ExecutionContext ec) {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+        def dayArraySize = ec.context.timeEntryList.size()
+        def timeEntry = ec.context.timeEntryList
+        def newTimeEntry = []
+       
+        for(int i = 0; i < dayArraySize; i++){
+            timeEntry[i].fromDate = df.format(timeEntry[i].fromDate)
+            if(!newTimeEntry.fromDate.contains(timeEntry[i].fromDate)){
+                newTimeEntry.push(timeEntry[i])
+            } else {
+                newTimeEntry[0].hours = newTimeEntry[0].hours + timeEntry[i].hours
+            }   
+        }
+
+        Map totalHours = ["DayAndHours":newTimeEntry]
+        return totalHours
+    }
+
+    static Map numberOfClockin(ExecutionContext ec) {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+        def timeEntry = ec.context.timeEntryInside
+        def arraySize = ec.context.timeEntryInside.size()
+        def fromDate = ec.context.fromDate
+        def counter = 0
+        
+        for(int i = 0; i < arraySize; i++) {
+            timeEntry[i].fromDate = df.format(timeEntry[i].fromDate)
+            if(fromDate == timeEntry[i].fromDate){
+                counter += 1
+            }
+        }
+
+        Map totalHours = ["numberOfClockin":counter]
+        return totalHours
+    }
+
+    static Map checkForLongShift(ExecutionContext ec) {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+        def timeEntry = ec.context.timeEntryInside
+        def arraySize = ec.context.timeEntryInside.size()
+        def fromDate = ec.context.fromDate
+        def thruDate = ec.context.thruDate
+        double container = 0
+        
+        for(int i = 0; i < arraySize; i++) {
+            def dfFromDate = df.format(timeEntry[i].fromDate)
+            if(fromDate == dfFromDate){
+                def intHour = timeEntry[i].hours.toInteger()
+                if(timeEntry[i].hours >= 5){
+                    container = timeEntry[i].hours
+                }
+            }
+        }
+
+        DecimalFormat df2 = new DecimalFormat("###.##")
+        Map totalHours = ["checkForLongShift":df2.format(container)]
+        return totalHours
     }
 
     

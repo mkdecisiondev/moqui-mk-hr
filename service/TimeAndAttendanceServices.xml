@@ -28,7 +28,7 @@
         </actions>
     </service>
 
-<!-- creating new timeSheet -->
+    <!-- creating new timeSheet -->
      <service verb="create" noun="TimeSheet">
         <in-parameters>
             <parameter name="partyId"/>
@@ -40,6 +40,20 @@
             <!-- fromDate and thruDate needs to be define and the service needs to using cronjob  -->
             <set field="statusId" value="TmshInProcess"/>
             <service-call name="create#mantle.work.time.Timesheet" in-map="context"/>
+        </actions>
+    </service>
+
+    <!-- TimePeriod Test -->
+    <service verb="create" noun="TimePeriod">
+        <in-parameters>
+            <parameter name="partyId"/>
+        </in-parameters>
+
+        <actions>
+            <set field="fromDate" from="ec.user.nowTimestamp"/>
+            <set field="thruDate" from="ec.user.nowTimestamp + 14"/>
+            <set field="timePeriodTypeId" value="PayrollBiWeek"/>
+            <service-call name="mantle.party.TimeServices.create#TimePeriod" in-map="context"/>
         </actions>
     </service>
 
@@ -127,11 +141,36 @@
     <service verb="calculate" noun="SumOfTimeSheet" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateTimeSheetHours">
         <in-parameters>
             <parameter name="timeEntryList" type="List"/>
-            <parameter name="timeSheet" type="ArrayList"/>
+            <parameter name="timeSheet" type="Map"/>
         </in-parameters>
     </service>
 
 
+    <!-- filter by day and add total hours -->
+    <service verb="calculate" noun="DayAndHours" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="calculateDayAndHours">
+        <in-parameters>
+            <parameter name="timeEntryList" type="List"/>
+        </in-parameters>
+    </service>
+
+    <!-- calculate the number of times the user clock in/out -->
+    <service verb="calculate" noun="numberOfClockin" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="numberOfClockin">
+        <in-parameters>
+            <parameter name="timeEntryInside" type="List"/>
+            <parameter name="fromDate"/>
+        </in-parameters>
+    </service>
+
+    <!-- Calls the groovy checkForLongShift -->
+    <service verb="calculate" noun="checkForLongShift" type="java" location="com.mk.moqui.TimeAndAttendanceServices" method="checkForLongShift">
+         <in-parameters>
+            <parameter name="timeEntryInside" type="List"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+        </in-parameters>
+    </service>
+
+<!-- /////////////////////////////////////////////////////////////////////////// -->
     <service verb="create" noun="TestClockin">
         <in-parameters>
             <parameter name="openTimeSheet"/>
@@ -154,7 +193,19 @@
         </actions>
     </service>
 
+    <!-- test service call -->
+    <service verb="create" noun="">
+        <actions>
+            <log message=" \n\n\n\n test service is working \n\n\n\n " />
+        </actions>
+    </service>
 
+    
+
+    
+
+
+  
 
     
 

@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
     default-menu-title="Time &amp; Attendance" default-menu-index="1" menu-image="glyphicon glyphicon-time" menu-image-type="icon">
 
-    <subscreens default-item="TimeSheet"/>
+    <subscreens default-item="TimeSheetv1"/>
 
     <widgets>
         <subscreens-panel id="employee-time-portal" type="popup"/>
