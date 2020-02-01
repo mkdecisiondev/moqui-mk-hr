@@ -27,9 +27,9 @@
     </actions>
 
     <widgets>
-        <label type="h1" text="=================test====================="/>
+        <!-- <label type="h1" text="=================test====================="/>
         <label type="h1" text="DayAndHours: ${DayAndHours.timeEntryId}"/>
-        <label type="h1" text="=================test====================="/>
+        <label type="h1" text="=================test====================="/> -->
 
         <label type="h1" text="Pay Period: ${PeriodList[0].fromDate} to ${PeriodList[0].thruDate}"/>
         <label type="h1" text="Employee: ${ec.user.userAccount.userFullName}"/>

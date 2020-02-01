@@ -185,6 +185,9 @@
         <!-- <label type="h1" text="===========test==========="/> -->
         <label type="h1" text="Hours worked this week: ${sumOfHours6}"/>
         <label type="h1" text="OT Hours worked today: ${sumOfHours1}"/>
+
+        <label type="h1" text="Hours worked this week: ${timeSheetBoolean}"/>
+
         <!-- <label type="h1" text="===========test==========="/> -->
 
         <form-list name="PersonalReport" list="timeEntryList" skip-form="true" header-dialog="true" saved-finds="true">

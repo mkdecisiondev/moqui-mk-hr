@@ -1,50 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
-        require-authentication="anonymous-all" >
+        require-authentication="anonymous-all" menu-include="false" >
 
 
-
-    <transition name="clockInTimeEntry" method="post"><service-call name="TimeAndAttendanceServices.create#TestTest" in-map="context"/>
-    <default-response url="../ExelSheet"/></transition>
+    <transition name="clockInTimeEntry"><service-call name="TimeAndAttendanceServices.create#testService" in-map="context"/>
+        <default-response url="."/></transition>
 
 
     <always-actions>
         <set field="partyId" from="ec.user.userAccount.partyId"/>
-
-        <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
-            <search-form-inputs default-order-by="-fromDate"/>
-            <econdition field-name="workTypeEnumId" value="WktpGeneralLabor"/>
-            <econdition field-name="partyId"/>
-        </entity-find>
-
-        <filter-map-list list="timeEntryList" to-list="openTimeEntryList">
-            <field-map field-name="thruDate" from="null"/>
-        </filter-map-list>
-
-        <set field="openTimeEntry" from="openTimeEntryList ? openTimeEntryList[0] : null"/>
-
-        <if condition="openTimeEntry">
-            <set field="timeEntryId" from="openTimeEntry.timeEntryId"/>
-        </if>
-
-        <if condition="openTimeEntry">
-            <then>
-                <service-call name="TimeAndAttendanceServices.create#TestClockOut" in-map="context" out-map="context"/>
-                <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
-            </then>
-            <else>
-                <service-call name="TimeAndAttendanceServices.create#TestClockin" in-map="context" out-map="context"/>
-                <service-call name="TimeAndAttendanceServices.create#TimeEntryClockIn" in-map="context"/>
-            </else>
-        </if>
+        <!-- <set field="partyId" from="ec.user.userId"/> -->
+        <set field="isAdmin" from="ec.user.isInGroup('ADMIN')"/>
     </always-actions>
 
-     
-    <widgets>
-        <label type="h1" text="${partyId}"/>
-        <label type="h1" text="${timeEntryId}"/>
 
-        <!-- <render-mode><text type="html" location="component://tfe-website/screen/mk-website/html/contact.html"/></render-mode> -->
-    </widgets>
+
 </screen>

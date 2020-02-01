@@ -5,25 +5,22 @@
     <service verb="create" noun="TimeEntryClockIn">
         <in-parameters>
             <parameter name="openTimeSheet"/>
-            <!-- <parameter name="timeSheetBoolean" type="Boolean"/> -->
+            <parameter name="timeSheetBoolean" type="Boolean"/>
         </in-parameters>
 
         <actions>
             <log message="===============service hitting clocking=================" />
-
             <set field="workTypeEnumId" value="WktpGeneralLabor"/>
             <set field="timesheetId" from="openTimeSheet"/>
-            <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
-            <log message="=========after======service hitting clocking=================" />
 
-            <!-- <if condition="timeSheetBoolean">
+            <if condition="timeSheetBoolean">
                 <then>
                     <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
                 </then>
                 <else>
                     <message type="warning">Create time sheet first</message>
                 </else>
-            </if> -->
+            </if>
 
         </actions>
     </service>
@@ -194,9 +191,58 @@
     </service>
 
     <!-- test service call -->
-    <service verb="create" noun="">
+    <service verb="create" noun="NavTimeService">
+        <in-parameters>
+            <parameter name="partyId"/>
+        </in-parameters>
         <actions>
-            <log message=" \n\n\n\n test service is working \n\n\n\n " />
+
+            <!-- looks inside Time sheet and store in timeSheetList -->
+            <entity-find entity-name="mantle.work.time.Timesheet" list="timeSheetList">
+                <econdition field-name="partyId"/>
+            </entity-find>
+
+            <filter-map-list list="timeSheetList" to-list="openTimeSheetList">
+            </filter-map-list>
+
+            <!-- <set field="timeSheetBoolean" from="openTimeSheetList ? true : false"/> -->
+
+
+            <!-- looks inside Time Entry and store in timeEntryList -->
+            <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
+                <order-by field-name="-fromDate"/>
+                <econdition field-name="partyId"/>
+            </entity-find>
+
+            <filter-map-list list="timeEntryList" to-list="openTimeEntryList">
+                <field-map field-name="thruDate" from="null"/>
+            </filter-map-list>
+
+            <set field="openTimeEntry" from="openTimeEntryList ? openTimeEntryList[0] : null"/>
+
+
+            <if condition="openTimeEntry">
+                <set field="timeEntryId" from="openTimeEntry.timeEntryId"/>
+            </if>
+
+            <set field="openTimeEntry" from="openTimeEntryList ? openTimeEntryList[0] : null"/>
+            <set field="timesheetId" value="${timeSheetList[-1].timesheetId}"/>
+
+
+            <if condition="openTimeEntry">
+                <then>
+                    <log message=" \n\n\n\n ${openTimeEntry} \n\n\n\n " />
+                    <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
+
+                </then>
+                <else>
+                    <log message=" \n\n\n\n no time entry \n\n\n\n " />
+                    <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
+                </else>
+
+            </if>
+
+
         </actions>
     </service>
 

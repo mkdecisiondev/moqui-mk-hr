@@ -16,10 +16,15 @@
         <authz artifactAuthzId="TIME_AND_ATTENDANCE_USERS" userGroupId="MK_EMPLOYEE" authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
     </artifactGroups>
 
-       <artifactGroups artifactGroupId="TIME_AND_ATTENDANCE_ADMIN" description="Time &amp; Attendance App ADMIN (includes access to reports)">
+    <artifactGroups artifactGroupId="TIME_AND_ATTENDANCE_ADMIN" description="Time &amp; Attendance App ADMIN (includes access to reports)">
         <artifacts artifactName="component://moqui-mk-hr/screen/TimeAndAttendance.xml" artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
         <artifacts artifactName="component://moqui-mk-hr/screen/TimeAndAttendance*" artifactTypeEnumId="AT_XML_SCREEN_TRANS" inheritAuthz="Y" nameIsPattern="Y"/>
         <authz artifactAuthzId="TIME_AND_ATTENDANCE_ADMIN" userGroupId="ADMIN" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+    </artifactGroups>
+
+    <artifactGroups artifactGroupId="MANTLE_API" description="Mantle REST API (via root resource)">
+        <artifacts artifactTypeEnumId="AT_REST_PATH" artifactName="/mantle" inheritAuthz="Y"/>
+        <authz artifactAuthzId="MANTLE_API_ADMIN" userGroupId="ADMIN" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
     </artifactGroups>
 
 

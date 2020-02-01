@@ -6,6 +6,14 @@
 
     <subscreens default-item="TimeSheetv1"/>
 
+    <always-actions>
+        <set field="partyId" from="ec.user.userAccount.partyId"/>
+    </always-actions>
+
+
+    <transition name="clockInTimeEntry"><service-call name="TimeAndAttendanceServices.create#NavTimeService" in-map="context"/>
+        <default-response url="."/></transition>
+
     <widgets>
         <subscreens-panel id="employee-time-portal" type="popup"/>
     </widgets>
