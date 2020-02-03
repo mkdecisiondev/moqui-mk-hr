@@ -16,6 +16,12 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.Enumeration enumId="UgtGeneralUser" enumTypeId="UserGroupType" description="General User"/>
     <userGroups userGroupId="MK_EMPLOYEE" description="Employees at MK Decision" groupTypeEnumId="UgtGeneralUser"/>
 
+       <!-- seed and loads the css file -->
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="21" resourceTypeEnumId="STRT_STYLESHEET" resourceValue="/TimeAndAttendance/css/Button.css"/>
+       <!-- seed and loads the js file -->
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="134" resourceTypeEnumId="STRT_HEADER_NAVBAR_COMP" resourceValue="/TimeAndAttendance/Button.js"/>
+
+
     <!-- Artifact group and authz for Time & Attendance App -->
     <artifactGroups artifactGroupId="TIME_AND_ATTENDANCE_USERS" description="Time &amp; Attendance App General User (via root screen)">
         <artifacts artifactName="component://TimeAndAttendance/screen/TimeAndAttendance/TimeTracking.xml" artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
