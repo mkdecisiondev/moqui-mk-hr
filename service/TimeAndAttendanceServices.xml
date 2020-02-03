@@ -172,4 +172,40 @@
             <service-call name="mantle.request.RequestServices.update#Request" in-map="context"/>
         </actions>
     </service>
+
+    <service verb="create" noun="NavTimeService">
+        <in-parameters>
+            <parameter name="partyId"/>
+        </in-parameters>
+
+        <actions>
+            <!-- looks inside Time Entry and store in timeEntryList -->
+            <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
+                <order-by field-name="-fromDate"/>
+                <econdition field-name="partyId"/>
+            </entity-find>
+
+            <filter-map-list list="timeEntryList" to-list="openTimeEntryList">
+                <field-map field-name="thruDate" from="null"/>
+            </filter-map-list>
+
+            <set field="openTimeEntry" from="openTimeEntryList ? openTimeEntryList[0] : null"/>
+
+            <if condition="openTimeEntry">
+                <set field="timeEntryId" from="openTimeEntry.timeEntryId"/>
+            </if>
+
+            <set field="openTimeEntry" from="openTimeEntryList ? openTimeEntryList[0] : null"/>
+
+
+            <if condition="openTimeEntry">
+                <then>
+                    <service-call name="mantle.work.TimeServices.store#TimeEntry" in-map="context"/>
+                </then>
+                <else>
+                    <service-call name="mantle.work.TimeServices.create#TimeEntryClockIn" in-map="context"/>
+                </else>
+            </if>
+        </actions>
+    </service>
 </services>
