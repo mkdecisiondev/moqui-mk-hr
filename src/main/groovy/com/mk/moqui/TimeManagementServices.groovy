@@ -19,7 +19,8 @@ class TimeAndAttendanceServices {
 //        System.out.println("Current week = " + Calendar.DAY_OF_WEEK)
 
         // Set the calendar to Monday of the current week
-        c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+        // Change the start day of the week to Sunday
+        c.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
 //        System.out.println("Current week = " + Calendar.DAY_OF_WEEK)
 
         // Print dates of the current week starting on Monday
