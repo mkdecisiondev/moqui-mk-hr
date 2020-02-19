@@ -16,6 +16,9 @@ class TimeAndAttendanceServices {
 
         Calendar c = GregorianCalendar.getInstance()
 
+        // Getting the current time to be use later if there is a open time entry
+        def timeNow = c.getTime()
+
 //        System.out.println("Current week = " + Calendar.DAY_OF_WEEK)
 
         // Set the calendar to Monday of the current week
@@ -46,9 +49,21 @@ class TimeAndAttendanceServices {
 //                println "Part of this week"
                 sumOfHours = sumOfHours + ev.getPlainValueMap(0).hours
             }
-//            else {
-//                println "Not part of this week"
-//            }
+            // Check if the open time entry doesn't have hours the logic below will act as a substitution
+            else if(!ev.getPlainValueMap(0).hours) {
+                // getting the milliseconds of the open time entry
+                def openTimeFrom = ev.fromDate.getTime() 
+                // getting the milliseconds of the current time
+                def currentTime = timeNow.getTime() 
+                // subtracting the open time entry to the current time
+                def totalMilliSeconds = currentTime - openTimeFrom
+                // converting the total to minutes
+                def totalMinutes = totalMilliSeconds / 60000
+                // converting the total to hours
+                def totalInHours = totalMinutes / 60
+                // adding the total to the sumOfHours
+                sumOfHours+= totalInHours
+            }
         }
 
         DecimalFormat df2 = new DecimalFormat("###.##")
