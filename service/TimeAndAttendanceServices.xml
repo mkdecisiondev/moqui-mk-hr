@@ -22,6 +22,7 @@
             <!--<parameter name="hours"/>-->
             <parameter name="fromDate"/>
             <parameter name="thruDate"/>
+            <parameter name="timeEntryId"/>
         </in-parameters>
         <out-parameters>
         </out-parameters>
